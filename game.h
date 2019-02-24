@@ -9,20 +9,48 @@
 #define GAME_H_
 
 /*
+ * Structure: OptionNode
+ * ------------------
+ * 	A structure used to represent a node in the options linked list
+ *
+ * 	value : an integer representing an option for the cell
+ * 	next : a pointer to the next element in the list
+ * 	prev : a pointer to the previous element in the list
+ */
+typedef struct node{
+	int value;
+	OptionNode* next;
+	OptionNode* prev;
+} OptionNode;
+
+/*
+ * Structure: OptionsList
+ * ------------------
+ * 	A structure used to represent a linked list
+ *
+ * 	top : a pointer to the first element of the list
+ * 	length : an integer representing the length of the list
+ */
+typedef struct List{
+	OptionNode* top;
+	int length;
+} OptionsList;
+
+/*
  * Structure: Cell
  * ------------------
  * 	A structure used to represent a cell on the board
  *
  * 	isFixed : an integer representing whether this cell is fixed in the user's board.
+ * 	isError : an integer representing whether this cell is an error in the user's board.
  * 	value : an integer representing the cell's value
- * 	options[] : an integers array storing the value options of a cell.
- * 	countOptions : an integer representing the length of options[]
+ * 	options : a linked list storing the value options of a cell.
  */
 typedef struct one_cell{
 	int isFixed;
+	int isError;
 	int value;
-	int *options;
-	int countOptions;
+	OptionsList* options;
 } Cell;
 
 /*
@@ -32,45 +60,45 @@ typedef struct one_cell{
  *
  * 	block_row : an integer representing how many rows every block have.
  * 	block_col : an integer representing how many columns every block have.
- * 	board_size : an integer representing home many rows and columns the board have.
+ * 	board_size : an integer representing how many rows and columns the board have.
+ * 	mark_errors : an integer representing the mark errors option.
  * 	current[] : an Cells array representing the current board's state.
- * 	complete[] : an Cells array representing the board's solution.
+ * 	complete[] : an Cells array representing the board's solution. ######//////
  */
 typedef struct sudoku_board{
 	int block_row;
 	int block_col;
 	int board_size;
+	int mark_errors;
 	Cell **current;
-	Cell **complete;
+	/*Cell **complete;*/
 } Board;
 
 /*
  * Function: insert_option
  * ----------------------
- * 	Receives a Cell and two integers representing a value, and the board size.
- * 	It inserts that value to the Cell's options array.
+ * 	Receives a Cell and an integer representing a value.
+ * 	It inserts that value to the Cell's options list.
  *
  * 	cell : a Cell which his options array should be changed.
  * 	value : an integer representing the value to be added to the Cell's options array.
- * 	board_size : an integer representing the board size.
  *
  * 	returns: ?
  */
-int insert_option(Cell* cell, int value, int board_size);
+int insert_option(Cell* cell, int value);
 
 /*
  * Function: remove_option
  * ----------------------
- * 	Receives a Cell and two integers representing an index of value, and the board size.
- * 	It removes that value from the Cell's options array.
+ * 	Receives a Cell and an integer representing a value.
+ * 	It removes that value from the Cell's options list.
  *
  * 	cell : a Cell which his options array should be changed.
- * 	index : an integer representing the index of the value to be removed from the Cell's options array.
- * 	board_size : an integer representing the board size.
+ * 	value : an integer representing the value to be removed from the Cell's options list.
  *
  * 	returns: ?
  */
-int remove_option(Cell* cell, int index, int board_size);
+int remove_option(Cell* cell, int value);
 
 /*
  * Function: printBoard

@@ -12,6 +12,7 @@
 #include "game.h"
 
 #define DEFAULT 0
+#define MAX_ITERS 1000
 
 int is_finished(Board* game, int type) {
 	int i = 0, j = 0;

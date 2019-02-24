@@ -27,24 +27,35 @@ enum commandID {
 	SET, HINT, VALIDATE, RESTART, EXIT
 };
 
-int insert_option(Cell* cell, int value, int board_size) {
+int insert_option(Cell* cell, int value) {
 	int index = 0;
+	OptionNode* last = cell->options->top->prev;
+	OptionNode* tmp;
 
-	for (; index < board_size; index++)
-		if (cell->options[index] == DEFAULT) {
-			cell->options[index] = value;
-			break;
-		}
-	cell->countOptions++;
+	if ((tmp = (OptionNode *) malloc(sizeof(OptionNode))) == NULL) {
+		printf(MALLOC_ERROR);
+		exit(0);
+	}
+	tmp->value = value;
+	tmp->next = cell->options->top;
+	tmp->prev = last;
+	last->next = tmp;
+	cell->options->top->prev = tmp;
+	cell->options->length = cell->options->length + 1;
 
 	return 1;
 }
 
-int remove_option(Cell* cell, int index, int board_size) {
-	for (; index < board_size - 1; index++)
-		cell->options[index] = cell->options[index + 1];
-	cell->options[board_size - 1] = 0;
-	cell->countOptions--;
+int remove_option(Cell* cell, int value) {
+	OptionNode* curr = cell->options->top;
+
+	while (curr->value != value)
+		curr = curr->next;
+	curr->prev->next = curr->next;
+	curr->next->prev = curr->prev;
+	free(curr);
+
+	cell->options->length = cell->options->length - 1;
 
 	return 0;
 }
@@ -236,15 +247,14 @@ Board* create_board(int rows, int cols, int fixed) {
 void create_cell(Cell* cell, int board_size) {
 	int i;
 
-	cell->countOptions = 0;
 	cell->isFixed = 0;
 	cell->value = DEFAULT;
-	if ((cell->options = (int *) malloc(sizeof(int) * board_size)) == NULL) {
+	if ((cell->options = (OptionsList *) malloc(sizeof(OptionsList))) == NULL) {
 		printf(MALLOC_ERROR);
 		exit(0);
 	}
-	for (i = 0; i < board_size; i++)
-		cell->options[i] = 0;
+	for (i = 1; i <= board_size; i++)
+		insert_option(cell, i);
 }
 
 void destroy_cell(Cell* cell) {

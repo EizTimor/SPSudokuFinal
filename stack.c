@@ -59,5 +59,8 @@ int is_empty(Stack* stack) {
 }
 
 void destroy_stack(Stack* stack) {
+	while (!is_empty(stack)) {
+		pop(stack);
+	}
 	free(stack);
 }
