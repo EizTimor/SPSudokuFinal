@@ -11,11 +11,11 @@
 
 #define MALLOC_ERROR "Error: malloc has failed\n"
 
-enum commandID {
+enum command_id {
 	SET, HINT, VALIDATE, RESTART, EXIT
 };
 
-Command* createCommand(int id, int params[3]) {
+Command* create_command(int id, int params[3]) {
 	int i;
 	Command* cmd = (Command*) malloc(sizeof(Command));
 	if (cmd == NULL) {
@@ -29,14 +29,14 @@ Command* createCommand(int id, int params[3]) {
 	return cmd;
 }
 
-void destroyCommand(Command* cmd) {
+void destroy_command(Command* cmd) {
 	if (!cmd)
 		return;
 	free(cmd);
 	return;
 }
 
-void printCommand(Command* cmd) {
+void print_command(Command* cmd) {
 	if (!cmd)
 		return;
 	switch (cmd->id) {
@@ -61,7 +61,7 @@ void printCommand(Command* cmd) {
 /*
  * a function used to get the command id from its name.
  */
-int getCommandType(char *type) {
+int get_command_type(char *type) {
 	if (!type || type == '\0')
 		return -1;
 	if (!strcmp(type, "set"))
@@ -77,11 +77,11 @@ int getCommandType(char *type) {
 	return -1;
 }
 
-Command* parseCommand(char *str) {
+Command* parse_command(char *str) {
 	const char delim[] = " \t\r\n";
 	int params[3] = { 0 }, i = 0, type;
 	char *token = strtok(str, delim);
-	type = getCommandType(token);
+	type = get_command_type(token);
 	switch (type) {
 	case SET:
 		for (; i < 3; i++) {
@@ -90,7 +90,7 @@ Command* parseCommand(char *str) {
 				return NULL;
 			params[i] = atoi(token);
 		}
-		return createCommand(SET, params);
+		return create_command(SET, params);
 	case HINT:
 		for (; i < 2; i++) {
 			token = strtok(NULL, delim);
@@ -98,13 +98,13 @@ Command* parseCommand(char *str) {
 				return NULL;
 			params[i] = atoi(token);
 		}
-		return createCommand(HINT, params);
+		return create_command(HINT, params);
 	case VALIDATE:
-		return createCommand(VALIDATE, params);
+		return create_command(VALIDATE, params);
 	case RESTART:
-		return createCommand(RESTART, params);
+		return create_command(RESTART, params);
 	case EXIT:
-		return createCommand(EXIT, params);
+		return create_command(EXIT, params);
 	}
 	return NULL;
 }

@@ -23,7 +23,7 @@
 /*
  * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
  */
-enum commandID {
+enum command_id {
 	SET, HINT, VALIDATE, RESTART, EXIT
 };
 
@@ -70,7 +70,7 @@ int remove_option(Cell* cell, int value) {
 	return 0;
 }
 
-void printSeparatorRow(int rowLength) {
+void print_separator_row(int rowLength) {
 	int i;
 	char *line = (char*) malloc(rowLength * sizeof(char));
 	if (line == NULL) {
@@ -85,7 +85,7 @@ void printSeparatorRow(int rowLength) {
 	free(line);
 }
 
-void printCell(Cell *cell) {
+void print_cell(Cell *cell) {
 	int val = cell->value;
 	if (cell->isFixed) {
 		printf(" .%d", val);
@@ -97,12 +97,12 @@ void printCell(Cell *cell) {
 	}
 }
 
-void printRow(Board *board, int index) {
+void print_row(Board *board, int index) {
 	int j = 0, i;
 	printf("|");
 	while (j < board->board_size) {
 		for (i = 0; i < board->block_col; i++) {
-			printCell(&board->current[index][j]);
+			print_cell(&board->current[index][j]);
 			j++;
 		}
 		printf(" |");
@@ -110,16 +110,16 @@ void printRow(Board *board, int index) {
 	printf("\n");
 }
 
-void printBoard(Board* board) {
+void print_board(Board* board) {
 	int index = 0, j;
 	int rowLength = board->block_row * (3 * board->block_col + 2) + 2;
-	printSeparatorRow(rowLength);
+	print_separator_row(rowLength);
 	while (index < board->board_size) {
 		for (j = 0; j < board->block_row; j++) {
-			printRow(board, index);
+			print_row(board, index);
 			index++;
 		}
-		printSeparatorRow(rowLength);
+		print_separator_row(rowLength);
 	}
 }
 
@@ -158,7 +158,7 @@ void clear_solution(Board* board) {
  * 			RESTART - restart the game
  * 			EXIT - exit the game
  */
-int executeCommand(Command* cmd, Board* board) {
+int execute_command(Command* cmd, Board* board) {
 	int x, y, val;
 	switch (cmd->id) {
 	case SET:
@@ -174,7 +174,7 @@ int executeCommand(Command* cmd, Board* board) {
 			return 0;
 		}
 		board->current[y][x].value = val;
-		printBoard(board);
+		print_board(board);
 		return 1;
 
 	case HINT:
@@ -298,7 +298,7 @@ int start_game(Board* board) {
 	int is_done = 0, to_check = 0;
 	char in[MAX_COMMAND];
 	Command* current = NULL;
-	printBoard(board);
+	print_board(board);
 	while (!is_done) {
 		while (current == NULL) {
 			if (fgets(in, MAX_COMMAND, stdin) == NULL) {
@@ -307,27 +307,27 @@ int start_game(Board* board) {
 					exit(0);
 				}
 				exit_game(board);
-				destroyCommand(current);
+				destroy_command(current);
 				return 0;
 			}
 			if (in[0] != '\n') {
-				current = parseCommand(in);
+				current = parse_command(in);
 				if (!current)
 					printf("%s", INV_COMMAND);
 			}
 		}
-		to_check = executeCommand(current, board);
+		to_check = execute_command(current, board);
 		if (to_check == EXIT) {
-			destroyCommand(current);
+			destroy_command(current);
 			return 0;
 		}
 		if (to_check == RESTART) {
-			destroyCommand(current);
+			destroy_command(current);
 			return 1;
 		}
 		if (to_check)
 			is_done = is_finished(board, 1);
-		destroyCommand(current);
+		destroy_command(current);
 		current = NULL;
 	}
 	printf("%s", SUCCESS_MSG);
@@ -340,21 +340,21 @@ int start_game(Board* board) {
 			exit_game(board);
 			return 0;
 		}
-		current = parseCommand(in);
+		current = parse_command(in);
 		if (!current || !(current->id == RESTART || current->id == EXIT)) {
 			printf("%s", INV_COMMAND);
 		} else {
-			switch (executeCommand(current, board)) {
+			switch (execute_command(current, board)) {
 			case RESTART:
-				destroyCommand(current);
+				destroy_command(current);
 				return 1;
 
 			case EXIT:
-				destroyCommand(current);
+				destroy_command(current);
 				return 0;
 			}
 		}
-		destroyCommand(current);
+		destroy_command(current);
 		current = NULL;
 	}
 	return 1;

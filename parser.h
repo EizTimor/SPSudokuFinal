@@ -21,7 +21,7 @@ typedef struct command_t{
 } Command;
 
 /*
- * Function: parseCommand
+ * Function: parse_command
  * ----------------------
  * 	Receives a string and returns a command variable with the interpreted command.
  *
@@ -30,24 +30,24 @@ typedef struct command_t{
  * 	returns: if the string represents a valid command, returns a command variable with
  * 			 the interpreted command. Otherwise returns null.
  */
-Command* parseCommand(char str[]);
+Command* parse_command(char str[]);
 
 /*
- * Function: destroyCommand
+ * Function: destroy_command
  * ------------------------
  * 	Used to destroy a command structure and free the memory allocated to it.
  *
  * 	cmd : a pointer to the command structure.
  *
  */
-void destroyCommand(Command* cmd);
+void destroy_command(Command* cmd);
 
 /*
- * Function: printCommand
+ * Function: print_command
  * ------------------------
  * 	prints the string corresponding to the command.
  *
  * 	cmd : a pointer to the command structure.
  *
  */
-void printCommand(Command* cmd);
+void print_command(Command* cmd);

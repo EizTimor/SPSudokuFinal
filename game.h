@@ -101,14 +101,14 @@ int insert_option(Cell* cell, int value);
 int remove_option(Cell* cell, int value);
 
 /*
- * Function: printBoard
+ * Function: print_board
  * ------------------------
  * 	prints the current board state to stdout.
  *
  * 	board : the board to be printed.
  *
  */
-void printBoard(Board* board);
+void print_board(Board* board);
 
 /*
  * Function: fix_cells
