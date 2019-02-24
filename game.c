@@ -30,7 +30,15 @@ enum commandID {
 int insert_option(Cell* cell, int value) {
 	int index = 0;
 	OptionNode* last = cell->options->top->prev;
-	OptionNode* tmp;
+	OptionNode* tmp = cell->options->top;
+
+	while (index < cell->options->length) {
+		if (tmp->value == value)
+			return 1;
+		tmp = tmp->next;
+		index++;
+	}
+	tmp = NULL;
 
 	if ((tmp = (OptionNode *) malloc(sizeof(OptionNode))) == NULL) {
 		printf(MALLOC_ERROR);
@@ -51,6 +59,8 @@ int remove_option(Cell* cell, int value) {
 
 	while (curr->value != value)
 		curr = curr->next;
+	if (curr == cell->options->top)
+		cell->options->top = curr->next;
 	curr->prev->next = curr->next;
 	curr->next->prev = curr->prev;
 	free(curr);
@@ -260,8 +270,8 @@ void create_cell(Cell* cell, int board_size) {
 void destroy_cell(Cell* cell) {
 	if (!cell)
 		return;
-	if (cell->options) {
-		free(cell->options);
+	while (cell->options->length > 0) {
+		remove_option(cell, cell->options->top->value);
 	}
 }
 
