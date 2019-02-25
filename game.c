@@ -215,6 +215,7 @@ Board* create_board(int rows, int cols, int fixed) {
 	board->block_row = rows;
 	board->block_col = cols;
 	board->board_size = rows * cols;
+	board->mark_errors 0;
 	if ((complete = (Cell **) malloc(sizeof(Cell *) * board->board_size)) == NULL) {
 		printf(MALLOC_ERROR);
 		exit(0);
@@ -252,6 +253,22 @@ Board* create_board(int rows, int cols, int fixed) {
 			}
 
 	return board;
+}
+
+Board* create_board_copy(Board* game) {
+	Board* newGame = create_board(game->block_row, game->block_col, 0);
+	int row, col;
+
+	newGame->mark_errors = game->mark_errors;
+	for (row = 0; row < game->board_size; row++)
+		for (col = 0; col < game->board_size; col++) {
+			newGame->current[row][col].isError = game->current[row][col].isError;
+			newGame->current[row][col].isFixed = game->current[row][col].isFixed;
+			newGame->current[row][col].options = memcpy(newGame->current[row][col].options, game->current[row][col].options,\
+					game->current[row][col].options->length * sizeof(OptionNode));
+			newGame->current[row][col].value = game->current[row][col].value;
+		}
+	return newGame;
 }
 
 void create_cell(Cell* cell, int board_size) {
