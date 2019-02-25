@@ -128,5 +128,3 @@ int randomized_backtrack(Board* game) {
 	}
 	return 1;
 }
-
-

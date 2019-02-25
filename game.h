@@ -9,6 +9,24 @@
 #define GAME_H_
 
 /*
+ * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
+ */
+enum command_id {
+	INVALID_COMMAND, SOLVE, EDIT, MARK_ERORRS, PRINT_BOARD, SET, VALIDATE,
+	GUESS, GENERATE, UNDO, REDO, SAVE, HINT, GUESS_HINT, NUM_SOLUTIONS, AUTOFILL,
+	RESET, RESTART, EXIT
+};
+
+/*
+ * an external variable representing the current game mode.
+ */
+typedef enum game_mode {
+	INIT, EDIT, SOLVE
+} game_mode;
+
+extern game_mode current_game_mode;
+
+/*
  * Structure: OptionNode
  * ------------------
  * 	A structure used to represent a node in the options linked list

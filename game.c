@@ -13,19 +13,15 @@
 
 #define DEFAULT 0
 #define MAX_COMMAND 1024
-#define INV_COMMAND "Error: invalid command\n"
+#define INV_COMMAND_MSG "Error: invalid command\n"
 #define EXIT_MSG "Exiting...\n"
 #define SUCCESS_MSG "Puzzle solved successfully\n"
 #define VALIDATION_PASSED "Validation passed: board is solvable\n"
 #define VALIDATION_FAILED "Validation failed: board is unsolvable\n"
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define FGETS_ERROR "Error: fgets has failed\n"
-/*
- * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
- */
-enum command_id {
-	SET, HINT, VALIDATE, RESTART, EXIT
-};
+
+game_mode current_game_mode = INIT;
 
 int insert_option(Cell* cell, int value) {
 	int index = 0;
@@ -70,17 +66,17 @@ int remove_option(Cell* cell, int value) {
 	return 0;
 }
 
-void print_separator_row(int rowLength) {
+void print_separator_row(int row_length) {
 	int i;
-	char *line = (char*) malloc(rowLength * sizeof(char));
+	char *line = (char*) malloc(row_length * sizeof(char));
 	if (line == NULL) {
 		printf(MALLOC_ERROR);
 		exit(0);
 	}
-	for (i = 0; i < rowLength - 1; i++) {
+	for (i = 0; i < row_length - 1; i++) {
 		line[i] = '-';
 	}
-	line[rowLength - 1] = '\0';
+	line[row_length - 1] = '\0';
 	printf("%s\n", line);
 	free(line);
 }
@@ -112,14 +108,14 @@ void print_row(Board *board, int index) {
 
 void print_board(Board* board) {
 	int index = 0, j;
-	int rowLength = board->block_row * (3 * board->block_col + 2) + 2;
-	print_separator_row(rowLength);
+	int row_length = board->block_row * (3 * board->block_col + 2) + 2;
+	print_separator_row(row_length);
 	while (index < board->board_size) {
 		for (j = 0; j < board->block_row; j++) {
 			print_row(board, index);
 			index++;
 		}
-		print_separator_row(rowLength);
+		print_separator_row(row_length);
 	}
 }
 
@@ -312,8 +308,8 @@ int start_game(Board* board) {
 			}
 			if (in[0] != '\n') {
 				current = parse_command(in);
-				if (!current)
-					printf("%s", INV_COMMAND);
+				if (current->id == INVALID_COMMAND)
+					printf("%s", current->error_message);
 			}
 		}
 		to_check = execute_command(current, board);
@@ -341,8 +337,9 @@ int start_game(Board* board) {
 			return 0;
 		}
 		current = parse_command(in);
+		//TODO: replace !current with "current->id == INVALID_COMMAND" and print reason
 		if (!current || !(current->id == RESTART || current->id == EXIT)) {
-			printf("%s", INV_COMMAND);
+			printf("%s", INV_COMMAND_MSG);
 		} else {
 			switch (execute_command(current, board)) {
 			case RESTART:
