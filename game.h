@@ -162,6 +162,17 @@ void clear_solution(Board* board);
 Board* create_board(int rows, int cols, int fixed);
 
 /*
+ * Function: create_board_copy
+ * ----------------------
+ * 	Receives a board and returns a deep copy of it.
+ *
+ *	game : the board of the game.
+ *
+ * 	return : a deep copy of the board received.
+ */
+Board* create_board_copy(Board* game);
+
+/*
  * Function: create_cell
  * ----------------------
  * 	Receives a cell and an integer representing the board size, then creates a new cell and returns it.
