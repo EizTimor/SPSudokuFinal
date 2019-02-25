@@ -191,8 +191,6 @@ void check_specific_error(Board* game, Cell* cell, int row, int col) {
 			game->current[i][j].value = value;
 		}
 }
-<<<<<<< HEAD
-=======
 
 int is_there_errors(Board* game) {
 	int row, col;
@@ -203,8 +201,3 @@ int is_there_errors(Board* game) {
 				return 1;
 	return 0;
 }
-
-
-
-
->>>>>>> b567e0ac7b25ad4744b6f2eaeb3a0e7dc95e60aa
