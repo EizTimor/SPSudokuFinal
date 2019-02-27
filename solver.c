@@ -201,3 +201,165 @@ int is_there_errors(Board* game) {
 				return 1;
 	return 0;
 }
+
+int guess_solution(Board* game, float t) {
+	if (is_there_errors(game)) {
+		/* print error message */
+		return 0;
+	}
+	lp(game);
+	return 1;
+}
+
+int num_of_empty_cells(Board* game) {
+	int count, row, col;
+
+	for (row = 0; row < game->board_size; row++)
+		for (col = 0; col < game->board_size; col++)
+			if (game->current[row][col].value == DEFAULT)
+				count++;
+	return count;
+}
+
+int get_random_value(Cell* cell) {
+	int r = rand() % cell->options->length;
+	OptionNode* node = cell->options->top;
+
+	for (; r >= 0; r--)
+		node = node->next;
+	return node->value;
+}
+
+int generate_board(Board* game, /*undo list,*/ int x, int y) {
+	int rRow, rCol;
+	int i = 0, j, count, k;
+	int* rows, cols;
+
+	if (!validate_board(game)) {
+		/* error message */
+		return 0;
+	}
+	if (num_of_empty_cells(game) < x) {
+		/* error message */
+		return 0;
+	}
+
+	rows = (int *)malloc(sizeof(int) * x);
+	cols = (int *)malloc(sizeof(int) * x);
+	if (!rows || !cols) {
+		/* error message */
+		exit(0);
+	}
+	for (; i < MAX_ITERS; i++) {
+		for (j = 0; j < x; j++) {
+			/* find and allocate values to x random cells */
+			rRow = rand() % game->board_size;
+			rCol = rand() % game->board_size;
+			if (game->current[rRow][rCol] != DEFAULT) {
+				if (game->current[rRow][rCol].options->length != 0) {
+					for (k = 0; k < count; k++) {
+						game->current[rows[k]][cols[k]].value = 0;
+						rows[k] = 0;
+						cols[k] = 0;
+					}
+					count = 0;
+					break;
+				}
+				rows[j] = rRow;
+				cols[j] = rCol;
+				set_value(game->current[rRow][rCol], get_random_value(game->current[rRow][rCol])); /* pay attention to set_value) */
+			}
+			else
+				j--;
+		}
+		if (!count)
+			continue;
+
+		if (!ilp(game)) {
+			for (k = 0; k < count; k++) {
+				game->current[rows[k]][cols[k]].value = 0;
+				rows[k] = 0;
+				cols[k] = 0;
+			}
+			count = 0;
+		}
+		else
+			break;
+	}
+
+	if (i == MAX_ITERS) {
+		free(rows);
+		free(cols);
+		/* error message */
+		return 0;
+	}
+
+	/* clear all but y cells */
+	for (i = 0; i < game->board_size * game->board_size - y; i++) {
+		rRow = rand() % game->board_size;
+		rCol = rand() % game->board_size;
+		if (game->current[rRow][rCol] == DEFAULT)
+			i--;
+		game->current[rRow][rCol] = DEFAULT;
+	}
+
+	/* add this to the undo list */
+
+	free(rows);
+	free(cols);
+	return 1;
+}
+
+int get_hint(Board* game, int row, int col, int type) {
+	Board* copy = create_board_copy(game);;
+	int value;
+
+	if (type) {
+		if (!ilp(copy)) {
+			/* error message */
+			return 0;
+		}
+	}
+	else {
+		if (!lp(copy)) {
+			/* error message */
+			return 0;
+		}
+	}
+
+	if (game->current[row][col].isFixed) {
+		/* error message */
+		return 0;
+	}
+	if (game->current[row][col].value != DEFAULT) {
+		/* error message */
+		return 0;
+	}
+
+	value = copy->current[row][col].value;
+	destroyBoard(copy);
+	return value;
+}
+
+int auto_fill(Board* game /*, undo list */) {
+	Board* copy;
+	int row, col;
+
+	if (!validate_board) {
+		/* error message */
+		return 0;
+	}
+
+	copy = create_board_copy(game);
+
+	for (row = 0; row < game->board_size; row++)
+		for (col = 0; col < game->board_size; col++) {
+			if (copy->current[row][col].options->length == 1) {
+				set_value(game->current[row][col], copy->current[row][col].options->top->value);
+				printf("Cell <%d,%d> has been auto-filled with the value %d\n", row, col, copy->current[row][col].options->top->value);
+			}
+		}
+
+	destroy_board(copy);
+	return 1;
+}

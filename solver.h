@@ -69,7 +69,7 @@ int number_of_solutions(Board* game);
 void check_errors_in_board(Board* game);
 
 /*
- * Function: deterministic_backtrack
+ * Function: check_specific_error
  * ----------------------
  * 	Receives a Board, a cell and two integers indicating the cell's row and column, and check only the related cells for errors.
  *
@@ -83,7 +83,7 @@ void check_errors_in_board(Board* game);
 void check_specific_error(Board* game, Cell* cell, int row, int col);
 
 /*
- * Function: deterministic_backtrack
+ * Function: is_there_errors
  * ----------------------
  * 	Receives a Board, and checks if there any errors in it.
  *
@@ -92,5 +92,70 @@ void check_specific_error(Board* game, Cell* cell, int row, int col);
  * 	returns: 1 if there are errors, 0 otherwise.
  */
 int is_there_errors(Board* game);
+
+/*
+ * Function: guess_solution
+ * ----------------------
+ * 	Receives a Board, and a threshold as a float, and uses LP to find a possible solution.
+ *
+ * 	game : the Board which holds the current board.
+ * 	t : a float representing the threshold.
+ *
+ * 	returns: 1 if a solution was found, 0 otherwise.
+ */
+int guess_solution(Board* game, float t);
+
+/*
+ * Function: num_of_empty_cells
+ * ----------------------
+ * 	Receives a Board, and count the number of empty cells.
+ *
+ * 	game : the Board which holds the current board.
+ *
+ * 	returns: the amount of empty cells.
+ */
+int num_of_empty_cells(Board* game);
+
+/*
+ * Function: generate_board
+ * ----------------------
+ * 	Receives a Board, undo list, and two integers representing the x,y arguments of the generate command,
+ * 	then it tries to generate a board to solve, while leaving only y cells revealed.
+ *
+ * 	game : the Board which holds the current board.
+ * 	undo : the undo list of this game.
+ * 	x : amount of cells to allocate random values to.
+ * 	y : the amount of cells to leave revealed at the end.
+ *
+ * 	returns: 1 if function created a new board, 0 if it's the same as before.
+ */
+int generate_board(Board* game, /*undo list,*/ int x, int y);
+
+/*
+ * Function: get_hint
+ * ----------------------
+ * 	Receives a Board, and two integers representing the coordinates requested cell and what kinf of hint requested,
+ * 	and returns a hint to the user for the value he should insert to that cell.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : the row of the requested cell.
+ * 	col : the column of the requested cell.
+ * 	type : 0 is for guess_hint (using LP), 1 is for hint (using ILP).
+ *
+ * 	returns: the hint as an integer, or 0 if no hint is available.
+ */
+int get_hint(Board* game, int row, int col, int type);
+
+/*
+ * Function: auto_fill
+ * ----------------------
+ * 	Receives a Board, and the undo list, and auto-fills obvious cells.
+ *
+ * 	game : the Board which holds the current board.
+ * 	undo : the undo list of this game.
+ *
+ * 	returns: 0 if board is unsolvable, 1 otherwise.
+ */
+int auto_fill(Board* game /*, undo list */);
 
 #endif /* SOLVER_STRUCT_H_ */

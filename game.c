@@ -211,7 +211,7 @@ Board* create_board(int rows, int cols, int fixed) {
 	board->block_row = rows;
 	board->block_col = cols;
 	board->board_size = rows * cols;
-	board->mark_errors 0;
+	board->mark_errors = 0;
 	if ((complete = (Cell **) malloc(sizeof(Cell *) * board->board_size)) == NULL) {
 		printf(MALLOC_ERROR);
 		exit(0);
