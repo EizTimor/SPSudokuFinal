@@ -1,5 +1,5 @@
 /*
- * moves_list.c
+ * turns_list.c
  *
  *  Created on: Dec 18, 2018
  *      Author: Timor Eizenman & Ido Lerer
@@ -36,10 +36,18 @@ void insert_move(movesList* moves, int row, int col, int prev_val, int new_val) 
 	node->prev_val = prev_val;
 	node->new_val = new_val;
 
-	node->prev = moves->top->prev;
-	moves->top->prev->next = node;
-	moves->top->prev = node;
-	node->next = moves->top;
+	if (moves->top != NULL) {
+		node->prev = moves->top->prev;
+		moves->top->prev->next = node;
+		moves->top->prev = node;
+		node->next = moves->top;
+	}
+	else {
+		node->prev = node;
+		node->next = node;
+		moves->top = node;
+	}
+
 	moves->length = moves->length + 1;
 }
 
@@ -66,6 +74,7 @@ turnsList* create_turns_list() {
 
 	list->length = 0;
 	list->top = NULL;
+	list->current = NULL;
 
 	return list;
 }
@@ -83,8 +92,25 @@ void insert_turn(turnsList* turns, movesList* changes) {
 	node->prev = turns->top->prev;
 	turns->top->prev->next = node;
 	turns->top->prev = node;
-	node->next = turns->top;
+	node->next = NULL;
+	turns->current = node;
 	turns->length = turns->length + 1;
+}
+
+void clean_from_current(turnsList* turns) {
+	turnNode* turn = turns->current, tmp;
+	if (turns->current == turns->top)
+		turns->top = NULL;
+	else
+		turn->prev->next = NULL;
+
+	while (turn != NULL) {
+		tmp = turn->next;
+		destroy_moves_list(turn->changes);
+		free(turn);
+		turns->length = turns->length - 1;
+		turn = tmp;
+	}
 }
 
 void destroy_turns_list(turnsList* turns) {

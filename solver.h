@@ -5,8 +5,8 @@
  *      Author: Timor
  */
 
-#ifndef SOLVER_STRUCT_H_
-#define SOLVER_STRUCT_H_
+#ifndef SOLVER_H_
+#define SOLVER_H_
 #include "game.h"
 
 /*
@@ -23,7 +23,7 @@ int is_finished(Board* game);
 /*
  * Function: is_value_valid
  * ----------------------
- * 	Receives a Board, and four integers representing row number, column number, value.
+ * 	Receives a Board, and three integers representing row number, column number, value.
  * 	It checks if the value is legal in the board at coordinates (row, col).
  *
  * 	game : the Board which holds the current board.
@@ -34,6 +34,49 @@ int is_finished(Board* game);
  * 	returns: 1 if the value is legal, 0 otherwise.
  */
 int is_value_valid(Board* game, int row, int col, int value);
+
+/*
+ * Function: set_value
+ * ----------------------
+ * 	Receives a Board, and three integers representing row number, column number, value.
+ * 	It assigns the value to the cell, mark errors, and modifying options lists.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ * 	value : an integer representing the value we are assigning.
+ *
+ * 	returns: ?
+ */
+void set_value(Board* game, int row, int col, int value);
+
+/*
+ * Function: update_options_after_set
+ * ----------------------
+ * 	Receives a Board, and two integers representing row number, column number.
+ * 	It modifies options lists only for the affected cells.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ *
+ * 	returns: ?
+ */
+void update_options_after_set(Board* game, int row, int col);
+
+/*
+ * Function: update_cell_options
+ * ----------------------
+ * 	Receives a Board, and two integers representing row number, column number.
+ * 	It modifies options lists for it.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ *
+ * 	returns: ?
+ */
+void update_cell_options(Board* game, int row, int col);
 
 /*
  * Function: validate_board
@@ -71,16 +114,15 @@ void check_errors_in_board(Board* game);
 /*
  * Function: check_specific_error
  * ----------------------
- * 	Receives a Board, a cell and two integers indicating the cell's row and column, and check only the related cells for errors.
+ * 	Receives a Board, and two integers indicating the cell's row and column, and check only the related cells for errors.
  *
  * 	game : the Board which holds the current board.
- * 	cell : the cell that was changed.
  * 	row : an integer indicating in which row the cell is located.
  * 	col : an integer indicating in which column the cell is located.
  *
  * 	returns: ?
  */
-void check_specific_error(Board* game, Cell* cell, int row, int col);
+void check_specific_error(Board* game, int row, int col);
 
 /*
  * Function: is_there_errors
@@ -123,13 +165,13 @@ int num_of_empty_cells(Board* game);
  * 	then it tries to generate a board to solve, while leaving only y cells revealed.
  *
  * 	game : the Board which holds the current board.
- * 	undo : the undo list of this game.
+ * 	turns : the undo list of this game.
  * 	x : amount of cells to allocate random values to.
  * 	y : the amount of cells to leave revealed at the end.
  *
  * 	returns: 1 if function created a new board, 0 if it's the same as before.
  */
-int generate_board(Board* game, /*undo list,*/ int x, int y);
+int generate_board(Board* game, turnsList* turns, int x, int y);
 
 /*
  * Function: get_hint
@@ -156,6 +198,42 @@ int get_hint(Board* game, int row, int col, int type);
  *
  * 	returns: 0 if board is unsolvable, 1 otherwise.
  */
-int auto_fill(Board* game /*, undo list */);
+int auto_fill(Board* game, turnsList* turns);
 
-#endif /* SOLVER_STRUCT_H_ */
+/*
+ * Function: undo
+ * ----------------------
+ * 	Receives a Board, and the undo list, and undo one move.
+ *
+ * 	game : the Board which holds the current board.
+ * 	turns : the undo list of this game.
+ *
+ * 	returns: ?
+ */
+void undo(Board* game, turnsList* turns);
+
+/*
+ * Function: redo
+ * ----------------------
+ * 	Receives a Board, and the undo list, and undo one move.
+ *
+ * 	game : the Board which holds the current board.
+ * 	undo : the undo list of this game.
+ *
+ * 	returns: ?
+ */
+void redo(Board* game, turnsList* turns);
+
+/*
+ * Function: reset_board
+ * ----------------------
+ * 	Receives a Board, and the undo list, and reset the board by undoing all turns.
+ *
+ * 	game : the Board which holds the current board.
+ * 	undo : the undo list of this game.
+ *
+ * 	returns: ?
+ */
+void reset_board(Board* game, turnsList* turns);
+
+#endif /* SOLVER_H_ */

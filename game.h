@@ -35,7 +35,7 @@ extern game_mode current_game_mode;
  * 	next : a pointer to the next element in the list
  * 	prev : a pointer to the previous element in the list
  */
-typedef struct node{
+typedef struct {
 	int value;
 	OptionNode* next;
 	OptionNode* prev;
@@ -49,7 +49,7 @@ typedef struct node{
  * 	top : a pointer to the first element of the list
  * 	length : an integer representing the length of the list
  */
-typedef struct List{
+typedef struct {
 	OptionNode* top;
 	int length;
 } OptionsList;
@@ -64,7 +64,7 @@ typedef struct List{
  * 	value : an integer representing the cell's value
  * 	options : a linked list storing the value options of a cell.
  */
-typedef struct one_cell{
+typedef struct {
 	int isFixed;
 	int isError;
 	int value;
@@ -83,13 +83,12 @@ typedef struct one_cell{
  * 	current[] : an Cells array representing the current board's state.
  * 	complete[] : an Cells array representing the board's solution. ######//////
  */
-typedef struct sudoku_board{
+typedef struct {
 	int block_row;
 	int block_col;
 	int board_size;
 	int mark_errors;
 	Cell **current;
-	/*Cell **complete;*/
 } Board;
 
 /*
@@ -127,25 +126,6 @@ int remove_option(Cell* cell, int value);
  *
  */
 void print_board(Board* board);
-
-/*
- * Function: fix_cells
- * ----------------------
- * 	Receives a board, and an integer representing the amount of cells to be fixed, randomize which cells to fix and fixed them.
- *
- *	board : the board of the game.
- * 	amount : an integer representing the amount of cells to be fixed.
- */
-void fix_cells(Board* board, int amount);
-
-/*
- * Function: clear_solution
- * ----------------------
- * 	Receives a board, and changes the complete version to be exactly like current for validation.
- *
- *	board : the board of the game.
- */
-void clear_solution(Board* board);
 
 /*
  * Function: create_board

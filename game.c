@@ -52,9 +52,16 @@ int insert_option(Cell* cell, int value) {
 
 int remove_option(Cell* cell, int value) {
 	OptionNode* curr = cell->options->top;
+	int count = 1;
 
-	while (curr->value != value)
+	while (curr->value != value) {
 		curr = curr->next;
+		if (count == cell->options->length) {
+			free(curr);
+			return 0;
+		}
+		count++;
+	}
 	if (curr == cell->options->top)
 		cell->options->top = curr->next;
 	curr->prev->next = curr->next;
@@ -119,17 +126,6 @@ void print_board(Board* board) {
 	}
 }
 
-void fix_cells(Board* board, int amount) {
-	int row, col;
-	while (amount > 0) {
-		col = rand() % board->board_size;
-		row = rand() % board->board_size;
-		if (board->complete[row][col].isFixed == 0) {
-			board->complete[row][col].isFixed = 1;
-			amount--;
-		}
-	}
-}
 /*
  * prints the exit message and frees all memory.
  */
@@ -138,15 +134,6 @@ void exit_game(Board* board) {
 	destroy_board(board);
 }
 
-/*
- * receives a board, resets its solution to its current state.
- */
-void clear_solution(Board* board) {
-	int i, j;
-	for (i = 0; i < board->board_size; i++)
-		for (j = 0; j < board->board_size; j++)
-			board->complete[i][j].value = board->current[i][j].value;
-}
 /*
  * the function receives a command object as parsed by the parser and executes it.
  * return: 	0 - game continue, waiting for next command
@@ -202,7 +189,6 @@ int execute_command(Command* cmd, Board* board) {
 Board* create_board(int rows, int cols, int fixed) {
 	int i, j;
 	Board* board = (Board*) malloc(sizeof(Board));
-	Cell **complete;
 	Cell **current;
 	if (board == NULL) {
 		printf(MALLOC_ERROR);
@@ -212,30 +198,20 @@ Board* create_board(int rows, int cols, int fixed) {
 	board->block_col = cols;
 	board->board_size = rows * cols;
 	board->mark_errors = 0;
-	if ((complete = (Cell **) malloc(sizeof(Cell *) * board->board_size)) == NULL) {
-		printf(MALLOC_ERROR);
-		exit(0);
-	}
+
 	if ((current = (Cell **) malloc(sizeof(Cell *) * board->board_size)) == NULL) {
 		printf(MALLOC_ERROR);
 		exit(0);
 	}
-	board->complete = complete;
 	board->current = current;
 
 	for (i = 0; i < board->board_size; i++) {
-		if ((complete[i] = (Cell *) malloc(sizeof(Cell) * board->board_size)) == NULL) {
-			printf(MALLOC_ERROR);
-			exit(0);
-		}
 		if ((current[i] = (Cell *) malloc(sizeof(Cell) * board->board_size)) == NULL) {
 			printf(MALLOC_ERROR);
 			exit(0);
 		}
-		for (j = 0; j < board->board_size; j++) {
-			create_cell(&complete[i][j], board->board_size);
+		for (j = 0; j < board->board_size; j++)
 			create_cell(&current[i][j], board->board_size);
-		}
 	}
 
 	randomized_backtrack(board);
@@ -276,8 +252,6 @@ void create_cell(Cell* cell, int board_size) {
 		printf(MALLOC_ERROR);
 		exit(0);
 	}
-	for (i = 1; i <= board_size; i++)
-		insert_option(cell, i);
 }
 
 void destroy_cell(Cell* cell) {
@@ -286,6 +260,8 @@ void destroy_cell(Cell* cell) {
 	while (cell->options->length > 0) {
 		remove_option(cell, cell->options->top->value);
 	}
+	free(cell->options);
+	free(cell);
 }
 
 void destroy_board(Board* board) {
@@ -295,14 +271,10 @@ void destroy_board(Board* board) {
 	for (i = board->board_size - 1; i >= 0; i--) {
 		for (j = board->board_size - 1; j >= 0; j--) {
 			destroy_cell(&board->current[i][j]);
-			destroy_cell(&board->complete[i][j]);
 		}
-		if (board->complete[i])
-			free(board->complete[i]);
 		if (board->current[i])
 			free(board->current[i]);
 	}
-	free(board->complete);
 	free(board->current);
 	free(board);
 }

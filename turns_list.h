@@ -20,7 +20,7 @@
  * 	next : a pointer to the next element in the list.
  * 	prev : a pointer to the previous element in the list.
  */
-typedef struct node{
+typedef struct {
 	int row;
 	int col;
 	int prev_val;
@@ -37,7 +37,7 @@ typedef struct node{
  * 	top : a pointer to the first element of the list
  * 	length : an integer representing the length of the list
  */
-typedef struct List{
+typedef struct {
 	turnNode* top;
 	int length;
 } movesList;
@@ -51,7 +51,7 @@ typedef struct List{
  * 	next : a pointer to the next element in the list.
  * 	prev : a pointer to the previous element in the list.
  */
-typedef struct node{
+typedef struct {
 	movesList* changes;
 	turnNode* next;
 	turnNode* prev;
@@ -62,11 +62,13 @@ typedef struct node{
  * ------------------
  * 	A structure used to represent a linked list
  *
- * 	top : a pointer to the first element of the list
- * 	length : an integer representing the length of the list
+ * 	top : a pointer to the first element of the list.
+ * 	current : a pointer to the last move we've done.
+ * 	length : an integer representing the length of the list.
  */
-typedef struct List{
+typedef struct {
 	turnNode* top;
+	turnNode* current;
 	int length;
 } turnsList;
 
@@ -126,6 +128,17 @@ turnsList* create_turns_list();
  * 	returns: ?
  */
 void insert_turn(turnsList* turns, movesList* changes);
+
+/*
+ * Function: clean_from_current
+ * ----------------------
+ * 	Receives a turns list, and clear all turns starting from current (include).
+ *
+ *	turns : the turns list to add the information into.
+ *
+ * 	returns: ?
+ */
+void clean_from_current(turnsList* turns);
 
 /*
  * Function: destroy_turns_list
