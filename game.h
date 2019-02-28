@@ -84,8 +84,8 @@ typedef struct {
  * 	complete[] : an Cells array representing the board's solution. ######//////
  */
 typedef struct {
-	int block_row;
-	int block_col;
+	int block_row; //m
+	int block_col; //n
 	int board_size;
 	int mark_errors;
 	Cell **current;
