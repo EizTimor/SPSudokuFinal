@@ -21,7 +21,7 @@ enum command_id {
  * an external variable representing the current game mode.
  */
 typedef enum game_mode {
-	INIT, EDIT, SOLVE
+	GAME_MODE_INIT, GAME_MODE_EDIT, GAME_MODE_SOLVE
 } game_mode;
 
 extern game_mode current_game_mode;

@@ -21,7 +21,7 @@
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define FGETS_ERROR "Error: fgets has failed\n"
 
-game_mode current_game_mode = INIT;
+game_mode current_game_mode = GAME_MODE_INIT;
 
 int insert_option(Cell* cell, int value) {
 	int index = 0;

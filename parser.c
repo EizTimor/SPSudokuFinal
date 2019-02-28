@@ -157,7 +157,7 @@ int is_command_available(enum command_id id) {
     case HINT:
     case GUESS_HINT:
     case AUTOFILL:
-			return current_game_mode == game_mode.SOLVE;
+			return current_game_mode == GAME_MODE_SOLVE;
 		case PRINT_BOARD:
     case SET:
     case VALIDATE:
@@ -166,10 +166,10 @@ int is_command_available(enum command_id id) {
     case SAVE:
     case NUM_SOLUTIONS:
     case RESET:
-			return current_game_mode == game_mode.EDIT ||
-      current_game_mode == game_mode.SOLVE;
+			return current_game_mode == GAME_MODE_EDIT ||
+      current_game_mode == GAME_MODE_SOLVE;
 		case GENERATE:
-    return current_game_mode == game_mode.EDIT;
+    return current_game_mode == GAME_MODE_EDIT;
 	}
 }
 
