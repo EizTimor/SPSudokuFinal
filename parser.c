@@ -63,6 +63,7 @@ int get_command_id(char *type) {
   }
 	return -1;
 }
+
 /*
 * a function used to get the command name from its id.
 */
