@@ -1,4 +1,5 @@
-#include "game.h"
+#include "game_utils.h"
+#include "solver.h"
 /*
  * Function: save_board
  * ----------------------
@@ -9,6 +10,18 @@
  * 	board : a Board of which current state should be saved.
  * 	path : the location of the file which will be created or saved to.
  *
- * 	returns: ?
+ * 	returns: 1 if save succeeded, 0 else.
  */
 int save_board(Board* board, const char* path);
+
+/*
+ * Function: load_board
+ * ----------------------
+ * 	Receives a path to a file containg a board (formatted as saved board).
+ * 	Reads the file and creates a board as described in it.
+ *
+ * 	path : the location of the file which contains the board.
+ *
+ * 	returns: a pointer to the loaded board, NULL if an error occured.
+ */
+Board* load_board(char* path);
