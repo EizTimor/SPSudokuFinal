@@ -8,6 +8,7 @@
 #ifndef SOLVER_H_
 #define SOLVER_H_
 #include "game.h"
+#include "turns_list.h"
 
 /*
  * Function: is_finished

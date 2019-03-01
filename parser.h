@@ -18,6 +18,7 @@
 typedef struct command_t{
 	int id;
 	int params[3];
+	char* string_param;
 	char* error_message;
 } Command;
 

@@ -35,10 +35,10 @@ extern game_mode current_game_mode;
  * 	next : a pointer to the next element in the list
  * 	prev : a pointer to the previous element in the list
  */
-typedef struct {
+typedef struct option_node {
 	int value;
-	OptionNode* next;
-	OptionNode* prev;
+	struct option_node* next;
+	struct option_node* prev;
 } OptionNode;
 
 /*
