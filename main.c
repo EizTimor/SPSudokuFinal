@@ -11,9 +11,6 @@
 #include "mainAux.h"
 #include <time.h>
 
-#define DEFAULT 0
-#define SIMPLE 3
-
 int main() {
 //	Board* board;
 //	int game_active = 1, fixed_amount;

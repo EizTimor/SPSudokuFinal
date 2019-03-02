@@ -9,10 +9,11 @@
  *
  * 	board : a Board of which current state should be saved.
  * 	path : the location of the file which will be created or saved to.
+ * 	all_fixed : if not 0, all current values are saved fixed (used when saving in edit mode).
  *
  * 	returns: 1 if save succeeded, 0 else.
  */
-int save_board(Board* board, const char* path);
+int save_board(Board* board, const char* path, int all_fixed);
 
 /*
  * Function: load_board
@@ -22,6 +23,6 @@ int save_board(Board* board, const char* path);
  *
  * 	path : the location of the file which contains the board.
  *
- * 	returns: a pointer to the loaded board, NULL if an error occured.
+ * 	returns: a pointer to the loaded board, NULL if an error occurred.
  */
 Board* load_board(char* path);

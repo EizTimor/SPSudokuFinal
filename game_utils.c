@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "game_utils.h"
 
-int save_board(Board* board, const char* path){
+int save_board(Board* board, const char* path, int all_fixed){
   char fixed, space;
   int i, j, val;
   FILE* file = fopen(path, "w");
@@ -15,7 +15,7 @@ int save_board(Board* board, const char* path){
   for (i = 0; i < board->board_size; i++){
     for (j = 0; j < board->board_size; j++){
       val = board->current[i][j].value;
-      fixed = (board->current[i][j].isFixed) ? '.' : NULL;
+      fixed = ((board->current[i][j].isFixed || all_fixed) && val) ? '.' : NULL;
       space = (j == board->board_size - 1) ? NULL : ' ';
       fprintf(file, "%d%c%c", val, fixed, space);
     }
@@ -31,9 +31,7 @@ Board* load_board(char* path){
   char dot;
   Board* board;
   FILE* file = fopen(path, "r");
-  // TODO: better error handling
   if (file == NULL) {
-    printf("Error opening file!\n");
     return NULL;
   }
   fscanf(file, "%d", &block_row);

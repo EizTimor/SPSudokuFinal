@@ -13,13 +13,14 @@
 #include "parser.h"
 
 #define DEFAULT 0
+#define SIMPLE 3
 #define MAX_COMMAND 1024
-#define INV_COMMAND_MSG "Error: invalid command\n"
 #define EXIT_MSG "Exiting...\n"
 #define SUCCESS_MSG "Puzzle solved successfully\n"
 #define VALIDATION_PASSED "Validation passed: board is solvable\n"
 #define VALIDATION_FAILED "Validation failed: board is unsolvable\n"
 #define MALLOC_ERROR "Error: malloc has failed\n"
+#define FOPEN_ERROR "Error: could not open file\n"
 #define FGETS_ERROR "Error: fgets has failed\n"
 
 game_mode current_game_mode = GAME_MODE_INIT;
@@ -94,7 +95,10 @@ void print_separator_row(int row_length) {
 
 void print_cell(Cell *cell) {
 	char fix_sign = cell->isFixed ? '.' : ' ';
-	char error_sign = (cell->isError &&(current_game_mode == GAME_MODE_EDIT || mark_errors)) ? '*' : ' ';
+	char error_sign =
+			(cell->isError
+					&& (current_game_mode == GAME_MODE_EDIT || mark_errors)) ?
+					'*' : ' ';
 	int val = cell->value;
 	if (val)
 		printf(" %2d%c%c", val, fix_sign, error_sign);
@@ -143,49 +147,163 @@ void exit_game(Board* board) {
  * 			RESTART - restart the game
  * 			EXIT - exit the game
  */
-int execute_command(Command* cmd, Board* board) {
-//	int x, y, val;
-//	switch (cmd->id) {
-//	case SET:
-//		x = cmd->params[0] - 1;
-//		y = cmd->params[1] - 1;
-//		val = cmd->params[2];
-//		if (board->current[y][x].isFixed) {
-//			printf("Error: cell is fixed\n");
-//			return 0;
-//		}
-//		if (!is_value_valid(board, y, x, val)) {
-//			printf("Error: value is invalid\n");
-//			return 0;
-//		}
-//		board->current[y][x].value = val;
-//		print_board(board);
-//		return 1;
-//
-//	case HINT:
-//		x = cmd->params[0] - 1;
-//		y = cmd->params[1] - 1;
-//		printf("Hint: set cell to %d\n", board->complete[y][x].value);
-//		return 0;
-//
-//	case VALIDATE:
-//		clear_solution(board);
-//		if (deterministic_backtrack(board)) {
-//			printf("%s", VALIDATION_PASSED);
-//		} else {
-//			printf("%s", VALIDATION_FAILED);
-//		}
-//		return 0;
-//
-//	case RESTART:
-//		destroy_board(board);
-//		return RESTART;
-//
-//	case EXIT:
-//		exit_game(board);
-//		return EXIT;
-//	}
-	return 0;
+void execute_command(Command* cmd) {
+	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
+	float float_param = cmd->float_param;
+	char* path = cmd->string_param;
+	switch (cmd->id) {
+	case INVALID_COMMAND:
+		printf(cmd->error_message);
+		break;
+
+	case SOLVE:
+		board = load_board(path);
+		if (!board) {
+			printf(FOPEN_ERROR);
+			break;
+		}
+		current_game_mode = GAME_MODE_SOLVE;
+		print_board(board);
+		break;
+
+	case EDIT:
+		if (path) {
+			board = load_board(path);
+			if (!board) {
+				printf(FOPEN_ERROR);
+				break;
+			}
+		} else {
+			board = create_board(SIMPLE, SIMPLE);
+		}
+		current_game_mode = GAME_MODE_EDIT;
+		print_board(board);
+		break;
+
+	case MARK_ERORRS:
+		mark_errors = cmd->params[0];
+		break;
+
+	case PRINT_BOARD:
+		print_board(board);
+		break;
+
+	case SET:
+		if (x < 1 || x > board->board_size) {
+			printf("Error: first parameter out of range\n");
+			break;
+		}
+		if (y < 1 || y > board->board_size) {
+			printf("Error: second parameter out of range\n");
+			break;
+		}
+		if (z < 0 || z > board->board_size) {
+			printf("Error: third parameter out of range\n");
+			break;
+		}
+		set_value(board, x, y, z);
+		print_board(board);
+		break;
+
+	case VALIDATE:
+		if (is_there_errors(board)) {
+			printf("Errors exist in board\n");
+			break;
+		}
+		if (validate_board(board)) {
+			printf("Board is solvable\n");
+		} else {
+			printf("Board is not solvable\n");
+		}
+		break;
+
+	case GUESS:
+		if (is_there_errors(board)) {
+			printf("Errors exist in board\n");
+			break;
+		}
+		if (!guess_solution(board, float_param)) {
+			printf("Could not find a solution with given threshold parameter");
+			break;
+		}
+		print_board(board);
+		break;
+
+	case GENERATE:
+		if (is_there_errors(board)) {
+			printf("Errors exist in board\n");
+			break;
+		}
+		if (num_of_empty_cells(board) < x) {
+			printf("Errors: not enough empty cells in board\n");
+			break;
+		}
+		generate_board(board, turns_list, x, y);
+		print_board(board);
+		break;
+
+	case UNDO:
+		undo(board, turns_list);
+		print_board(board);
+		break;
+
+	case REDO:
+		redo(board, turns_list);
+		print_board(board);
+		break;
+
+	case SAVE:
+		if (current_game_mode == GAME_MODE_EDIT) {
+			if (is_there_errors(board)) {
+				printf("Errors exist in board, can not save\n");
+				break;
+			}
+			if (!validate_board(board)) {
+				printf("Board is not solvable, can not save\n");
+				break;
+			}
+			if (!save_board(board, path, 1)){
+				printf(FOPEN_ERROR);
+			}
+		} else {
+			if(!save_board(board, path, 0)){
+				printf(FOPEN_ERROR);
+			}
+		}
+		break;
+
+	case HINT:
+		get_hint(board, x, y, 1);
+		break;
+
+	case GUESS_HINT:
+		get_hint(board, x, y, 0);
+		break;
+
+	case NUM_SOLUTIONS:
+		if (is_there_errors(board)) {
+			printf("Errors exist in board\n");
+			break;
+		}
+		printf("%d", number_of_solutions(board));
+		break;
+
+	case AUTOFILL:
+		auto_fill(board, turns_list);
+		print_board(board);
+		break;
+
+	case RESET:
+		reset_board(board, turns_list);
+		print_board(board);
+		break;
+
+	case EXIT:
+		destroy_board(board);
+		destroy_turns_list(turns_list);
+		//TODO: update after finishing game flow.
+		break;
+	}
 }
 
 Board* create_board(int rows, int cols) {
@@ -207,7 +325,8 @@ Board* create_board(int rows, int cols) {
 	board->current = current;
 
 	for (i = 0; i < board->board_size; i++) {
-		if ((current[i] = (Cell *) malloc(sizeof(Cell) * board->board_size)) == NULL) {
+		if ((current[i] = (Cell *) malloc(sizeof(Cell) * board->board_size))
+				== NULL) {
 			printf(MALLOC_ERROR);
 			exit(0);
 		}
@@ -223,10 +342,15 @@ Board* create_board_copy(Board* game) {
 
 	for (row = 0; row < game->board_size; row++)
 		for (col = 0; col < game->board_size; col++) {
-			newGame->current[row][col].isError = game->current[row][col].isError;
-			newGame->current[row][col].isFixed = game->current[row][col].isFixed;
-			newGame->current[row][col].options = memcpy(newGame->current[row][col].options, game->current[row][col].options,\
-					game->current[row][col].options->length * sizeof(OptionNode));
+			newGame->current[row][col].isError =
+					game->current[row][col].isError;
+			newGame->current[row][col].isFixed =
+					game->current[row][col].isFixed;
+			newGame->current[row][col].options = memcpy(
+					newGame->current[row][col].options,
+					game->current[row][col].options,
+					game->current[row][col].options->length
+							* sizeof(OptionNode));
 			newGame->current[row][col].value = game->current[row][col].value;
 		}
 	return newGame;
