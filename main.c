@@ -15,17 +15,17 @@
 #define SIMPLE 3
 
 int main() {
-	Board* board;
-	int game_active = 1, fixed_amount;
-
-	while (game_active) {
-		fixed_amount = get_fixed_amount();
-
-		if (fixed_amount == -1)
-			exit(0);
-
-		board = create_board(SIMPLE, SIMPLE, fixed_amount);
-		game_active = start_game(board);
-	}
+//	Board* board;
+//	int game_active = 1, fixed_amount;
+//
+//	while (game_active) {
+//		fixed_amount = get_fixed_amount();
+//
+//		if (fixed_amount == -1)
+//			exit(0);
+//
+//		board = create_board(SIMPLE, SIMPLE);
+//		game_active = start_game(board);
+//	}
 	return 0;
 }

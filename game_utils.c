@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "game_utils.h"
 
 int save_board(Board* board, const char* path){
-  char* val, fixed, space;
-  int i, j;
+  char fixed, space;
+  int i, j, val;
   FILE* file = fopen(path, "w");
   // TODO: better error handling
   if (file == NULL || board == NULL) {
@@ -13,10 +14,10 @@ int save_board(Board* board, const char* path){
   fprintf(file, "%d %d\n", board->block_row, board->block_col);
   for (i = 0; i < board->board_size; i++){
     for (j = 0; j < board->board_size; j++){
-      val = sprintf("%d", board->current[i][j].value);
-      fixed = board->current[i][j].isFixed ? "." : "";
-      space = j == board->board_size - 1 ? "" : " ";
-      fprintf(file, "%s%s%s", val, fixed, space);
+      val = board->current[i][j].value;
+      fixed = (board->current[i][j].isFixed) ? '.' : NULL;
+      space = (j == board->board_size - 1) ? NULL : ' ';
+      fprintf(file, "%d%c%c", val, fixed, space);
     }
     fprintf(file, "\n");
   }
@@ -35,9 +36,9 @@ Board* load_board(char* path){
     printf("Error opening file!\n");
     return NULL;
   }
-  fscanf(file, "%d", block_row);
-  fscanf(file, "%d", block_col);
-  board = create_board(block_row, block_col, 0);
+  fscanf(file, "%d", &block_row);
+  fscanf(file, "%d", &block_col);
+  board = create_board(block_row, block_col);
   for (i = 0; i < board->board_size; i++){
     for (j = 0; j < board->board_size; j++){
       fscanf(file, "%d", &val);

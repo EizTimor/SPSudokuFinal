@@ -10,8 +10,8 @@
 #include <string.h>
 #include "turns_list.h"
 
-movesList* create_moves_list() {
-	movesList* list = (movesList*)malloc(sizeof(movesList));
+MovesList* create_moves_list() {
+	MovesList* list = (MovesList*)malloc(sizeof(MovesList));
 	if (list == NULL) {
 		/* error message */
 		exit(0);
@@ -23,8 +23,8 @@ movesList* create_moves_list() {
 	return list;
 }
 
-void insert_move(movesList* moves, int row, int col, int prev_val, int new_val) {
-	moveNode* node = (moveNode*)malloc(sizeof(moveNode));
+void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) {
+	MoveNode* node = (MoveNode*)malloc(sizeof(MoveNode));
 
 	if (node == NULL) {
 		/* error message */
@@ -51,8 +51,8 @@ void insert_move(movesList* moves, int row, int col, int prev_val, int new_val) 
 	moves->length = moves->length + 1;
 }
 
-void destroy_moves_list(movesList* moves) {
-	moveNode* node;
+void destroy_moves_list(MovesList* moves) {
+	MoveNode* node;
 
 	while (!moves->length) {
 		node = moves->top->next;
@@ -64,8 +64,8 @@ void destroy_moves_list(movesList* moves) {
 	free(moves);
 }
 
-turnsList* create_turns_list() {
-	turnsList* list = (turnsList*)malloc(sizeof(turnsList));
+TurnsList* create_turns_list() {
+	TurnsList* list = (TurnsList*)malloc(sizeof(TurnsList));
 
 	if (list == NULL) {
 		/* error message */
@@ -79,8 +79,8 @@ turnsList* create_turns_list() {
 	return list;
 }
 
-void insert_turn(turnsList* turns, movesList* changes) {
-	turnNode* node = (turnNode*)malloc(sizeof(turnNode));
+void insert_turn(TurnsList* turns, MovesList* changes) {
+	TurnNode* node = (TurnNode*)malloc(sizeof(TurnNode));
 
 	if (node == NULL) {
 		/* error message */
@@ -97,8 +97,8 @@ void insert_turn(turnsList* turns, movesList* changes) {
 	turns->length = turns->length + 1;
 }
 
-void clean_from_current(turnsList* turns) {
-	turnNode* turn = turns->current, tmp;
+void clean_from_current(TurnsList* turns) {
+	TurnNode *turn = turns->current, *tmp;
 	if (turns->current == turns->top)
 		turns->top = NULL;
 	else
@@ -113,8 +113,8 @@ void clean_from_current(turnsList* turns) {
 	}
 }
 
-void destroy_turns_list(turnsList* turns) {
-	turnNode* node;
+void destroy_turns_list(TurnsList* turns) {
+	TurnNode* node;
 
 	while (!turns->length) {
 		node = turns->top->next;

@@ -1,5 +1,5 @@
-#include "game_utils.h"
 #include "solver.h"
+#include "game.h"
 /*
  * Function: save_board
  * ----------------------

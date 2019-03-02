@@ -1,3 +1,6 @@
+#include "game.h"
+#include "turns_list.h"
+#include "stack.h"
 /*
  * solver.h
  *
@@ -7,8 +10,6 @@
 
 #ifndef SOLVER_H_
 #define SOLVER_H_
-#include "game.h"
-#include "turns_list.h"
 
 /*
  * Function: is_finished
@@ -172,7 +173,7 @@ int num_of_empty_cells(Board* game);
  *
  * 	returns: 1 if function created a new board, 0 if it's the same as before.
  */
-int generate_board(Board* game, turnsList* turns, int x, int y);
+int generate_board(Board* game, TurnsList* turns, int x, int y);
 
 /*
  * Function: get_hint
@@ -199,7 +200,7 @@ int get_hint(Board* game, int row, int col, int type);
  *
  * 	returns: 0 if board is unsolvable, 1 otherwise.
  */
-int auto_fill(Board* game, turnsList* turns);
+int auto_fill(Board* game, TurnsList* turns);
 
 /*
  * Function: undo
@@ -211,7 +212,7 @@ int auto_fill(Board* game, turnsList* turns);
  *
  * 	returns: ?
  */
-void undo(Board* game, turnsList* turns);
+void undo(Board* game, TurnsList* turns);
 
 /*
  * Function: redo
@@ -223,7 +224,7 @@ void undo(Board* game, turnsList* turns);
  *
  * 	returns: ?
  */
-void redo(Board* game, turnsList* turns);
+void redo(Board* game, TurnsList* turns);
 
 /*
  * Function: reset_board
@@ -235,6 +236,6 @@ void redo(Board* game, turnsList* turns);
  *
  * 	returns: ?
  */
-void reset_board(Board* game, turnsList* turns);
+void reset_board(Board* game, TurnsList* turns);
 
 #endif /* SOLVER_H_ */

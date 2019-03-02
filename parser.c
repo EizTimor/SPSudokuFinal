@@ -13,7 +13,8 @@
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define WRONG_GAME_MODE_ERROR "Error: '%s' command is not available in the current game mode.\n the command is available in %s."
 
-Command* create_command(int id, int params[3], char* error_message) {
+Command* create_command(int id, int params[3], char* string_param,
+		char* error_message) {
 	int i;
 	Command* cmd = (Command*) malloc(sizeof(Command));
 	if (cmd == NULL) {
@@ -22,6 +23,7 @@ Command* create_command(int id, int params[3], char* error_message) {
 	}
 	cmd->id = id;
 	cmd->error_message = error_message;
+	cmd->string_param = string_param;
 	for (i = 0; i < 3; i++) {
 		cmd->params[i] = params[i];
 	}
@@ -35,16 +37,18 @@ void destroy_command(Command* cmd) {
 	return;
 }
 
-void print_command(Command* cmd) {
-	int id, i = 0, num_params;
-	if (!cmd)
-		return;
-	id = cmd->id;
-	num_params = num_of_params(id);
-	printf("%s", get_command_name(id));
-	while (i < num_of_params) {
-		printf(" %d", cmd->params[i]);
-		i++;
+/*
+ * a function used to get the command name from its id.
+ */
+const char* get_command_name(int id) {
+	static char* names[] = { "invalid_command", "solve", "edit", "mark_errors",
+			"print_board", "set", "validate", "guess", "generate", "undo",
+			"redo", "save", "hint", "guess_hint", "num_solutions", "autofill",
+			"reset", "exit" };
+	if (id < INVALID_COMMAND || id > EXIT) {
+		return 0;
+	} else {
+		return names[id];
 	}
 }
 
@@ -63,67 +67,55 @@ int get_command_id(char *type) {
 }
 
 /*
- * a function used to get the command name from its id.
+ * returns the number of parameters the command expectects.
  */
-char* get_command_name(enum command_id id) {
+int num_of_params(enum command_id id) {
 	switch (id) {
 	case INVALID_COMMAND:
-		return "invalid_command";
-	case SOLVE:
-		return "solve";
-	case EDIT:
-		return "edit";
-	case MARK_ERORRS:
-		return "mark_errors";
 	case PRINT_BOARD:
-		return "print_board";
-	case SET:
-		return "set";
 	case VALIDATE:
-		return "validate";
-	case GUESS:
-		return "guess";
-	case GENERATE:
-		return "generate";
 	case UNDO:
-		return "undo";
 	case REDO:
-		return "redo";
-	case SAVE:
-		return "save";
-	case HINT:
-		return "hint";
-	case GUESS_HINT:
-		return "guess_hint";
-	case NUM_SOLUTIONS:
-		return "num_solutions";
 	case AUTOFILL:
-		return "autofill";
+	case NUM_SOLUTIONS:
 	case RESET:
-		return "reset";
 	case EXIT:
-		return "exit";
+		return 0;
+	case SOLVE:
+	case EDIT:
+	case MARK_ERORRS:
+	case GUESS:
+	case SAVE:
+		return 1;
+	case GENERATE:
+	case HINT:
+	case GUESS_HINT:
+		return 2;
+	case SET:
+		return 3;
 	}
-	return NULL;
+	return 0;
 }
 
 /*
  * returns a string containing the modes in which the command is available.
  */
-char* get_command_modes(enum command_id id) {
+const char* get_command_modes(enum command_id id) {
+	static char* modes[] =
+			{ "all game modes", "Solve", "Edit and Solve", "Edit" };
 	switch (id) {
 	case INVALID_COMMAND:
 		return NULL;
 	case SOLVE:
 	case EDIT:
 	case EXIT:
-		return "all game modes";
+		return modes[0];
 	case MARK_ERORRS:
 	case GUESS:
 	case HINT:
 	case GUESS_HINT:
 	case AUTOFILL:
-		return "Solve";
+		return modes[1];
 	case PRINT_BOARD:
 	case SET:
 	case VALIDATE:
@@ -132,11 +124,11 @@ char* get_command_modes(enum command_id id) {
 	case SAVE:
 	case NUM_SOLUTIONS:
 	case RESET:
-		return "Edit and Solve";
+		return modes[2];
 	case GENERATE:
-		return "Edit";
+		return modes[3];
 	}
-	return NULL;
+	return 0;
 }
 
 /*
@@ -173,45 +165,14 @@ int is_command_available(enum command_id id) {
 }
 
 /*
- * returns the number of parameters the command expectects.
- */
-int num_of_params(enum command_id id) {
-	switch (id) {
-	case INVALID_COMMAND:
-	case PRINT_BOARD:
-	case VALIDATE:
-	case UNDO:
-	case REDO:
-	case AUTOFILL:
-	case NUM_SOLUTIONS:
-	case RESET:
-	case EXIT:
-		return 0;
-	case SOLVE:
-	case EDIT:
-	case MARK_ERORRS:
-	case GUESS:
-	case SAVE:
-		return 1;
-	case GENERATE:
-	case HINT:
-	case GUESS_HINT:
-		return 2;
-	case SET:
-		return 3;
-	}
-	return 0;
-}
-
-/*
  * returns true iff the parameters of the command are optional.
  */
 int is_params_optional(enum command_id id) {
 	return id == EDIT;
 }
 
-char* fill_params(char* command_name, int num_params, int params[3],
-		int optional, char* str) {
+int fill_params(const char* command_name, int num_params, int params[3],
+		int optional, char* str, char* error_message) {
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
@@ -219,21 +180,22 @@ char* fill_params(char* command_name, int num_params, int params[3],
 		if (i < num_params) {
 			params[i] = atoi(token);
 		} else {
-			return sprintf(
+			sprintf(error_message,
 					"Error: too many parameters.\n'%s' command requires %d parameters.",
 					command_name, num_params);
+			return 0;
 		}
 	}
 	if (i < num_params && !optional) {
-		return sprintf(
+		sprintf(error_message,
 				"Error: not enough parameters.\n'%s' command requires %d parameters.",
 				command_name, num_params);
+		return 0;
 	}
-	return NULL;
+	return 1;
 }
 
-char* fill_string_params(char* command_name, int num_params, char* param,
-		int optional, char* str) {
+int fill_string_params(const char* command_name, int num_params, char* param, int optional, char* str, char* error_message) {
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
@@ -241,45 +203,70 @@ char* fill_string_params(char* command_name, int num_params, char* param,
 		if (i < num_params) {
 			param = token;
 		} else {
-			return sprintf(
+			sprintf(error_message,
 					"Error: too many parameters.\n'%s' command requires %d parameters.",
 					command_name, num_params);
+			return 0;
 		}
 	}
 	if (i < num_params && !optional) {
-		return sprintf(
+		sprintf(error_message,
 				"Error: not enough parameters.\n'%s' command requires %d parameters.",
 				command_name, num_params);
+		return 0;
 	}
-	return NULL;
+	return 1;
 }
 
 Command* parse_command(char *str) {
 	const char delim[] = " \t\r\n";
-	int params[3] = { 0 }, i = 0, id;
-	char *token = strtok(str, delim), *message;
+	int params[3] = { 0 }, id;
+	char *token = strtok(str, delim), error_message[128], *string_param = NULL;
+	const char* command_name;
+	const char* command_modes;
 	id = get_command_id(token);
 	if (id == -1) {
 		return NULL;
 	}
+	command_name = get_command_name(id);
+	command_modes = get_command_modes(id);
 	if (!is_command_available(id)) {
-		return create_command(INVALID_COMMAND, params,
-				sprintf(WRONG_GAME_MODE_ERROR, get_command_name(id),
-						get_command_modes(id)));
+		sprintf(error_message, WRONG_GAME_MODE_ERROR, command_name,
+				command_modes);
+		return create_command(INVALID_COMMAND, params, string_param,
+				error_message);
+
 	}
 	switch (id) {
 	case SOLVE:
 	case EDIT:
 	case SAVE:
-
+		if (!fill_string_params(get_command_name(id), num_of_params(id), string_param, is_params_optional(id), str, error_message)) {
+			return create_command(INVALID_COMMAND, params, string_param,
+					error_message);
+		} else
+			return create_command(id, params, string_param, NULL);
 	default:
-		message = fill_params(get_command_name(id), num_of_params(id), params,
-				is_params_optional(id));
-		if (message)
-			return create_command(INVALID_COMMAND, params, message);
-		else
-			return create_command(id, params, NULL);
+		if (!fill_params(get_command_name(id), num_of_params(id), params,
+				is_params_optional(id), str, error_message)) {
+			return create_command(INVALID_COMMAND, params, string_param,
+					error_message);
+		} else
+			return create_command(id, params, string_param, NULL);
 	}
 	return NULL;
 }
 
+void print_command(Command* cmd) {
+	int id, i = 0, num_params;
+	if (!cmd)
+		return;
+	id = cmd->id;
+	num_params = num_of_params(id);
+	printf("%s", get_command_name(id));
+	while (i < num_params) {
+		printf(" %d", cmd->params[i]);
+		i++;
+	}
+	printf("%s", cmd->string_param);
+}

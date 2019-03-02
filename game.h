@@ -86,8 +86,7 @@ typedef struct {
 typedef struct {
 	int block_row; //m
 	int block_col; //n
-	int board_size;
-	int mark_errors;
+	int board_size; //N
 	Cell **current;
 } Board;
 
@@ -130,16 +129,15 @@ void print_board(Board* board);
 /*
  * Function: create_board
  * ----------------------
- * 	Receives Receives three integers representing number of rows and columns in block, and amount of fixed cells,
+ * 	Receives Receives three integers representing number of rows and columns in block,
  * 	then it creates a board and returns it.
  *
  *	rows : an integer representing the number of rows in a block.
  * 	cols : an integer representing the number of columns in a block.
- * 	fixed : an integer representing the number of fixed cells to be fixed.
  *
  * 	return : a Board object, ready for sudoku game.
  */
-Board* create_board(int rows, int cols, int fixed);
+Board* create_board(int rows, int cols);
 
 /*
  * Function: create_board_copy

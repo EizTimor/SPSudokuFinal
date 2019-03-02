@@ -20,14 +20,14 @@
  * 	next : a pointer to the next element in the list.
  * 	prev : a pointer to the previous element in the list.
  */
-typedef struct {
+typedef struct move_node{
 	int row;
 	int col;
 	int prev_val;
 	int new_val;
-	moveNode* next;
-	moveNode* prev;
-} moveNode;
+	struct move_node* next;
+	struct move_node* prev;
+} MoveNode;
 
 /*
  * Structure: movesList
@@ -38,9 +38,9 @@ typedef struct {
  * 	length : an integer representing the length of the list
  */
 typedef struct {
-	turnNode* top;
+	MoveNode* top;
 	int length;
-} movesList;
+} MovesList;
 
 /*
  * Structure: turnNode
@@ -51,11 +51,11 @@ typedef struct {
  * 	next : a pointer to the next element in the list.
  * 	prev : a pointer to the previous element in the list.
  */
-typedef struct {
-	movesList* changes;
-	turnNode* next;
-	turnNode* prev;
-} turnNode;
+typedef struct turn_node {
+	MovesList* changes;
+	struct turn_node* next;
+	struct turn_node* prev;
+} TurnNode;
 
 /*
  * Structure: turnsList
@@ -67,10 +67,10 @@ typedef struct {
  * 	length : an integer representing the length of the list.
  */
 typedef struct {
-	turnNode* top;
-	turnNode* current;
+	TurnNode* top;
+	TurnNode* current;
 	int length;
-} turnsList;
+} TurnsList;
 
 /*
  * Function: create_moves_list
@@ -79,7 +79,7 @@ typedef struct {
  *
  * 	returns: a pointer to a new empty moves list.
  */
-movesList* create_moves_list();
+MovesList* create_moves_list();
 
 /*
  * Function: insert_move
@@ -95,7 +95,7 @@ movesList* create_moves_list();
  *
  * 	returns: ?
  */
-void insert_move(movesList* moves, int row, int col, int prev_val, int new_val);
+void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val);
 
 /*
  * Function: destroy_moves_list
@@ -105,7 +105,7 @@ void insert_move(movesList* moves, int row, int col, int prev_val, int new_val);
  * 	moves : a pointer to the movesList structure.
  *
  */
-void destroy_moves_list(movesList* moves);
+void destroy_moves_list(MovesList* moves);
 
 /*
  * Function: create_turns_list
@@ -114,7 +114,7 @@ void destroy_moves_list(movesList* moves);
  *
  * 	returns: a pointer to a new empty turns list.
  */
-turnsList* create_turns_list();
+TurnsList* create_turns_list();
 
 /*
  * Function: insert_turn
@@ -127,7 +127,7 @@ turnsList* create_turns_list();
  *
  * 	returns: ?
  */
-void insert_turn(turnsList* turns, movesList* changes);
+void insert_turn(TurnsList* turns, MovesList* changes);
 
 /*
  * Function: clean_from_current
@@ -138,7 +138,7 @@ void insert_turn(turnsList* turns, movesList* changes);
  *
  * 	returns: ?
  */
-void clean_from_current(turnsList* turns);
+void clean_from_current(TurnsList* turns);
 
 /*
  * Function: destroy_turns_list
@@ -148,6 +148,6 @@ void clean_from_current(turnsList* turns);
  * 	moves : a pointer to the turnsList structure.
  *
  */
-void destroy_turns_list(turnsList* turns);
+void destroy_turns_list(TurnsList* turns);
 
 #endif /* TURNS_LIST_H_ */

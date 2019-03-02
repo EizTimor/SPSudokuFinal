@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "game.h"
 #include "solver.h"
 #include "parser.h"
@@ -22,6 +23,9 @@
 #define FGETS_ERROR "Error: fgets has failed\n"
 
 game_mode current_game_mode = GAME_MODE_INIT;
+Board* board = NULL;
+int mark_errors = 1;
+TurnsList* turns_list = NULL;
 
 int insert_option(Cell* cell, int value) {
 	int index = 0;
@@ -89,15 +93,13 @@ void print_separator_row(int row_length) {
 }
 
 void print_cell(Cell *cell) {
+	char fix_sign = cell->isFixed ? '.' : ' ';
+	char error_sign = (cell->isError &&(current_game_mode == GAME_MODE_EDIT || mark_errors)) ? '*' : ' ';
 	int val = cell->value;
-	if (cell->isFixed) {
-		printf(" .%d", val);
-	} else {
-		if (val)
-			printf("  %d", val);
-		else
-			printf("   ");
-	}
+	if (val)
+		printf(" %2d%c%c", val, fix_sign, error_sign);
+	else
+		printf("   %c%c", fix_sign, error_sign);
 }
 
 void print_row(Board *board, int index) {
@@ -115,7 +117,7 @@ void print_row(Board *board, int index) {
 
 void print_board(Board* board) {
 	int index = 0, j;
-	int row_length = board->block_row * (3 * board->block_col + 2) + 2;
+	int row_length = 4 * board->board_size + board->block_row + 1;
 	print_separator_row(row_length);
 	while (index < board->board_size) {
 		for (j = 0; j < board->block_row; j++) {
@@ -142,51 +144,51 @@ void exit_game(Board* board) {
  * 			EXIT - exit the game
  */
 int execute_command(Command* cmd, Board* board) {
-	int x, y, val;
-	switch (cmd->id) {
-	case SET:
-		x = cmd->params[0] - 1;
-		y = cmd->params[1] - 1;
-		val = cmd->params[2];
-		if (board->current[y][x].isFixed) {
-			printf("Error: cell is fixed\n");
-			return 0;
-		}
-		if (!is_value_valid(board, y, x, val, 1)) {
-			printf("Error: value is invalid\n");
-			return 0;
-		}
-		board->current[y][x].value = val;
-		print_board(board);
-		return 1;
-
-	case HINT:
-		x = cmd->params[0] - 1;
-		y = cmd->params[1] - 1;
-		printf("Hint: set cell to %d\n", board->complete[y][x].value);
-		return 0;
-
-	case VALIDATE:
-		clear_solution(board);
-		if (deterministic_backtrack(board)) {
-			printf("%s", VALIDATION_PASSED);
-		} else {
-			printf("%s", VALIDATION_FAILED);
-		}
-		return 0;
-
-	case RESTART:
-		destroy_board(board);
-		return RESTART;
-
-	case EXIT:
-		exit_game(board);
-		return EXIT;
-	}
+//	int x, y, val;
+//	switch (cmd->id) {
+//	case SET:
+//		x = cmd->params[0] - 1;
+//		y = cmd->params[1] - 1;
+//		val = cmd->params[2];
+//		if (board->current[y][x].isFixed) {
+//			printf("Error: cell is fixed\n");
+//			return 0;
+//		}
+//		if (!is_value_valid(board, y, x, val)) {
+//			printf("Error: value is invalid\n");
+//			return 0;
+//		}
+//		board->current[y][x].value = val;
+//		print_board(board);
+//		return 1;
+//
+//	case HINT:
+//		x = cmd->params[0] - 1;
+//		y = cmd->params[1] - 1;
+//		printf("Hint: set cell to %d\n", board->complete[y][x].value);
+//		return 0;
+//
+//	case VALIDATE:
+//		clear_solution(board);
+//		if (deterministic_backtrack(board)) {
+//			printf("%s", VALIDATION_PASSED);
+//		} else {
+//			printf("%s", VALIDATION_FAILED);
+//		}
+//		return 0;
+//
+//	case RESTART:
+//		destroy_board(board);
+//		return RESTART;
+//
+//	case EXIT:
+//		exit_game(board);
+//		return EXIT;
+//	}
 	return 0;
 }
 
-Board* create_board(int rows, int cols, int fixed) {
+Board* create_board(int rows, int cols) {
 	int i, j;
 	Board* board = (Board*) malloc(sizeof(Board));
 	Cell **current;
@@ -197,7 +199,6 @@ Board* create_board(int rows, int cols, int fixed) {
 	board->block_row = rows;
 	board->block_col = cols;
 	board->board_size = rows * cols;
-	board->mark_errors = 0;
 
 	if ((current = (Cell **) malloc(sizeof(Cell *) * board->board_size)) == NULL) {
 		printf(MALLOC_ERROR);
@@ -213,25 +214,13 @@ Board* create_board(int rows, int cols, int fixed) {
 		for (j = 0; j < board->board_size; j++)
 			create_cell(&current[i][j], board->board_size);
 	}
-
-	randomized_backtrack(board);
-	fix_cells(board, fixed);
-
-	for (i = 0; i < board->board_size; i++)
-		for (j = 0; j < board->board_size; j++)
-			if (complete[i][j].isFixed) {
-				current[i][j].value = complete[i][j].value;
-				current[i][j].isFixed = 1;
-			}
-
 	return board;
 }
 
 Board* create_board_copy(Board* game) {
-	Board* newGame = create_board(game->block_row, game->block_col, 0);
+	Board* newGame = create_board(game->block_row, game->block_col);
 	int row, col;
 
-	newGame->mark_errors = game->mark_errors;
 	for (row = 0; row < game->board_size; row++)
 		for (col = 0; col < game->board_size; col++) {
 			newGame->current[row][col].isError = game->current[row][col].isError;
@@ -244,7 +233,6 @@ Board* create_board_copy(Board* game) {
 }
 
 void create_cell(Cell* cell, int board_size) {
-	int i;
 
 	cell->isFixed = 0;
 	cell->value = DEFAULT;
@@ -279,69 +267,69 @@ void destroy_board(Board* board) {
 	free(board);
 }
 
-int start_game(Board* board) {
-	int is_done = 0, to_check = 0;
-	char in[MAX_COMMAND];
-	Command* current = NULL;
-	print_board(board);
-	while (!is_done) {
-		while (current == NULL) {
-			if (fgets(in, MAX_COMMAND, stdin) == NULL) {
-				if (ferror(stdin)) {
-					printf(FGETS_ERROR);
-					exit(0);
-				}
-				exit_game(board);
-				destroy_command(current);
-				return 0;
-			}
-			if (in[0] != '\n') {
-				current = parse_command(in);
-				if (current->id == INVALID_COMMAND)
-					printf("%s", current->error_message);
-			}
-		}
-		to_check = execute_command(current, board);
-		if (to_check == EXIT) {
-			destroy_command(current);
-			return 0;
-		}
-		if (to_check == RESTART) {
-			destroy_command(current);
-			return 1;
-		}
-		if (to_check)
-			is_done = is_finished(board, 1);
-		destroy_command(current);
-		current = NULL;
-	}
-	printf("%s", SUCCESS_MSG);
-
-	/*
-	 * game is complete, waiting to either "restart" or "exit" command
-	 */
-	while (1) {
-		if (fgets(in, MAX_COMMAND, stdin) == NULL) {
-			exit_game(board);
-			return 0;
-		}
-		current = parse_command(in);
-		//TODO: replace !current with "current->id == INVALID_COMMAND" and print reason
-		if (!current || !(current->id == RESTART || current->id == EXIT)) {
-			printf("%s", INV_COMMAND_MSG);
-		} else {
-			switch (execute_command(current, board)) {
-			case RESTART:
-				destroy_command(current);
-				return 1;
-
-			case EXIT:
-				destroy_command(current);
-				return 0;
-			}
-		}
-		destroy_command(current);
-		current = NULL;
-	}
-	return 1;
-}
+//int start_game(Board* board) {
+//	int is_done = 0, to_check = 0;
+//	char in[MAX_COMMAND];
+//	Command* current = NULL;
+//	print_board(board);
+//	while (!is_done) {
+//		while (current == NULL) {
+//			if (fgets(in, MAX_COMMAND, stdin) == NULL) {
+//				if (ferror(stdin)) {
+//					printf(FGETS_ERROR);
+//					exit(0);
+//				}
+//				exit_game(board);
+//				destroy_command(current);
+//				return 0;
+//			}
+//			if (in[0] != '\n') {
+//				current = parse_command(in);
+//				if (current->id == INVALID_COMMAND)
+//					printf("%s", current->error_message);
+//			}
+//		}
+//		to_check = execute_command(current, board);
+//		if (to_check == EXIT) {
+//			destroy_command(current);
+//			return 0;
+//		}
+//		if (to_check == RESTART) {
+//			destroy_command(current);
+//			return 1;
+//		}
+//		if (to_check)
+//			is_done = is_finished(board, 1);
+//		destroy_command(current);
+//		current = NULL;
+//	}
+//	printf("%s", SUCCESS_MSG);
+//
+//	/*
+//	 * game is complete, waiting to either "restart" or "exit" command
+//	 */
+//	while (1) {
+//		if (fgets(in, MAX_COMMAND, stdin) == NULL) {
+//			exit_game(board);
+//			return 0;
+//		}
+//		current = parse_command(in);
+//		//TODO: replace !current with "current->id == INVALID_COMMAND" and print reason
+//		if (!current || !(current->id == RESTART || current->id == EXIT)) {
+//			printf("%s", INV_COMMAND_MSG);
+//		} else {
+//			switch (execute_command(current, board)) {
+//			case RESTART:
+//				destroy_command(current);
+//				return 1;
+//
+//			case EXIT:
+//				destroy_command(current);
+//				return 0;
+//			}
+//		}
+//		destroy_command(current);
+//		current = NULL;
+//	}
+//	return 1;
+//}
