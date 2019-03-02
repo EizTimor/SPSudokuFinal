@@ -81,12 +81,11 @@ typedef struct {
  * 	board_size : an integer representing how many rows and columns the board have.
  * 	mark_errors : an integer representing the mark errors option.
  * 	current[] : an Cells array representing the current board's state.
- * 	complete[] : an Cells array representing the board's solution. ######//////
  */
 typedef struct {
-	int block_row; //m
-	int block_col; //n
-	int board_size; //N
+	int block_row;
+	int block_col;
+	int board_size;
 	Cell **current;
 } Board;
 

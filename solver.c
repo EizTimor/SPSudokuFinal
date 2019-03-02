@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include "solver.h"
+#include "game.h"
+#include "ILP_solver.h"
 
 #define DEFAULT 0
 #define MAX_ITERS 1000
@@ -46,6 +48,19 @@ void set_value(Board* game, int row, int col, int value) {
 		check_specific_error(game, row, col);
 		update_options_after_set(game, row, col);
 	}
+}
+
+void set_value_command(Board* game, int row, int col, int value, TurnsList* turns) {
+	int prev_val = game->current[row][col].value;
+	MovesList* moves;
+	game->current[row][col].value = value;
+	if (value != prev_val) {
+		check_specific_error(game, row, col);
+		update_options_after_set(game, row, col);
+	}
+	moves = create_moves_list();
+	insert_move(moves, row, col, prev_val, value);
+	insert_turn(turns, moves);
 }
 
 void update_options_after_set(Board* game, int row, int col) {
@@ -88,7 +103,7 @@ void update_cell_options(Board* game, int row, int col) {
 int validate_board(Board* game) {
 	Board* copy = create_board_copy(game);
 	int valid = ilp(copy);
-	destroyBoard(copy);
+	destroy_board(copy);
 	return valid;
 }
 
@@ -138,25 +153,19 @@ int number_of_solutions(Board* game) {
 	while (!is_empty(stack)) {
 		if (is_value_valid(game, stack->top->row, stack->top->column,
 				stack->top->value)) {
-			set_value(game->current[stack->top->row][stack->top->column].value,
-					stack->top->row, stack->top->column, stack->top->value);
+			set_value(game,stack->top->row, stack->top->column, stack->top->value);
 			if (!get_first_empty_cell(game, &row, &col))
 				push(stack, row, col, 1);
 			else { /* board is complete */
 				count += 1;
-				set_value(
-						game->current[stack->top->row][stack->top->column].value,
-						stack->top->row, stack->top->column, DEFAULT);
+				set_value(game, stack->top->row, stack->top->column, DEFAULT);
 				if (stack->top->value < game->board_size) /* we can try another value for this cell */
 					stack->top->value = stack->top->value + 1;
 				else {
 					while (!is_empty(stack)
 							&& stack->top->value == game->board_size) { /* pop until we find a cell to modify */
 						pop(stack, node);
-						set_value(
-								game->current[stack->top->row][stack->top->column].value,
-								stack->top->row, stack->top->column,
-								DEFAULT);
+						set_value(game, stack->top->row, stack->top->column, DEFAULT);
 					}
 					if (!is_empty(stack))
 						stack->top->value = stack->top->value + 1;
@@ -168,9 +177,7 @@ int number_of_solutions(Board* game) {
 			else {
 				while (!is_empty(stack) && stack->top->value == game->board_size) { /* pop until we find a cell to modify */
 					pop(stack, node);
-					set_value(
-							game->current[stack->top->row][stack->top->column].value,
-							stack->top->row, stack->top->column, DEFAULT);
+					set_value(game, stack->top->row, stack->top->column, DEFAULT);
 				}
 				if (!is_empty(stack))
 					stack->top->value = stack->top->value + 1;
@@ -282,7 +289,7 @@ int get_random_value(Cell* cell) {
 int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	int rRow, rCol;
 	int i = 0, j, count, k;
-	int* rows, cols;
+	int* rows, *cols;
 	MovesList* moves;
 	Board* copy;
 
@@ -310,7 +317,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			if (game->current[rRow][rCol].value != DEFAULT) {
 				if (game->current[rRow][rCol].options->length != 0) {
 					for (k = 0; k < count; k++) {
-						set_value(game->current[rows[k]][cols[k]], DEFAULT);
+						set_value(game, rows[k], cols[k], DEFAULT);
 						rows[k] = 0;
 						cols[k] = 0;
 					}
@@ -319,8 +326,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 				}
 				rows[j] = rRow;
 				cols[j] = rCol;
-				set_value(game->current[rRow][rCol],
-						get_random_value(game->current[rRow][rCol]));
+				set_value(game, rRow, rCol, get_random_value(&game->current[rRow][rCol]));
 			} else
 				j--;
 		}
@@ -329,7 +335,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 
 		if (!ilp(game)) {
 			for (k = 0; k < count; k++) {
-				set_value(game->current[rows[k]][cols[k]], DEFAULT);
+				set_value(game, rows[k], cols[k], DEFAULT);
 				rows[k] = 0;
 				cols[k] = 0;
 			}
@@ -351,17 +357,16 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	for (i = 0; i < game->board_size * game->board_size - y; i++) {
 		rRow = rand() % game->board_size;
 		rCol = rand() % game->board_size;
-		if (game->current[rRow][rCol] == DEFAULT)
+		if (game->current[rRow][rCol].value == DEFAULT)
 			i--;
-		game->current[rRow][rCol] = DEFAULT;
-		if (copy->current[rRow][rCol] != DEFAULT)
+		game->current[rRow][rCol].value = DEFAULT;
+		if (copy->current[rRow][rCol].value != DEFAULT)
 			insert_move(moves, rRow, rCol, copy->current[rRow][rCol].value,
 			DEFAULT);
 	}
 
 	for (k = 0; k < count; k++)
-		insert_move(moves, rows[k], cols[k], DEFAULT,
-				game->current[rows[k]][cols[k]].value);
+		insert_move(moves, rows[k], cols[k], DEFAULT, game->current[rows[k]][cols[k]].value);
 
 	insert_turn(turns, moves);
 
@@ -373,7 +378,6 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 
 int get_hint(Board* game, int row, int col, int type) {
 	Board* copy = create_board_copy(game);
-	;
 	int value;
 
 	if (type) {
@@ -398,7 +402,7 @@ int get_hint(Board* game, int row, int col, int type) {
 	}
 
 	value = copy->current[row][col].value;
-	destroyBoard(copy);
+	destroy_board(copy);
 	return value;
 }
 

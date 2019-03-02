@@ -6,7 +6,7 @@ int save_board(Board* board, const char* path, int all_fixed){
   char fixed, space;
   int i, j, val;
   FILE* file = fopen(path, "w");
-  // TODO: better error handling
+  /* TODO: better error handling */
   if (file == NULL || board == NULL) {
     printf("Error opening file!\n");
     return 0;

@@ -7,7 +7,8 @@
 
 #ifndef ILP_SOLVER_H_
 #define ILP_SOLVER_H_
+#include "game.h"
 
-
+int ilp(Board* game);
 
 #endif /* ILP_SOLVER_H_ */

@@ -161,6 +161,17 @@ int guess_solution(Board* game, float t);
 int num_of_empty_cells(Board* game);
 
 /*
+ * Function: get_random_value
+ * ----------------------
+ * 	Receives a cell, and returns a random option from it's options list.
+ *
+ * 	cell : the cell which we want to get the random option from.
+ *
+ * 	returns: value of the selected option.
+ */
+int get_random_value(Cell* cell);
+
+/*
  * Function: generate_board
  * ----------------------
  * 	Receives a Board, undo list, and two integers representing the x,y arguments of the generate command,
