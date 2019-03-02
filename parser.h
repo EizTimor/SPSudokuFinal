@@ -14,10 +14,15 @@
  * 			SET: 0, HINT: 1, VALIDATE: 2, RESTART: 3, EXIT: 4
  * 	params[]: an integer array storing command parameters.
  * 			For commands with less than 3 parameters excess integers are 0.
+ * 	float_parm: a float variable for commands containing a float parameter.
+ * 	string_parm: a char* variable for commands containing a string parameter.
+ * 	error_message: if an error occurred during the parsing of the command, this variable
+ * 					will contain the error description.
  */
 typedef struct command_t{
 	int id;
 	int params[3];
+	float float_param;
 	char* string_param;
 	char* error_message;
 } Command;
@@ -30,7 +35,8 @@ typedef struct command_t{
  * 	str[] : a character array with the string to be interpreted.
  *
  * 	returns: if the string represents a valid command, returns a command variable with
- * 			 the interpreted command. Otherwise returns null.
+ * 			 the interpreted command. Otherwise returns a new command of type INVALID_COMMAND
+ * 			 with an error message in the error_message command variable.
  */
 Command* parse_command(char str[]);
 
