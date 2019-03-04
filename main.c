@@ -7,22 +7,29 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "game.h"
-#include "mainAux.h"
 #include <time.h>
+#include "game.h"
+#include "parser.h"
+
+#define MAX_COMMAND 257
+#define FGETS_ERROR "Error: fgets has failed\n"
+#define COMMAND_TOO_LONG_ERROR "Error: invalid command, too many characters\n"
 
 int main() {
-/*	Board* board;
-	int game_active = 1, fixed_amount;
-
-	while (game_active) {
-		fixed_amount = get_fixed_amount();
-
-		if (fixed_amount == -1)
-			exit(0);
-
-		board = create_board(SIMPLE, SIMPLE);
-		game_active = start_game(board);
-	}*/
+	int is_game_live = 1;
+	char in[MAX_COMMAND] = { 0 };
+	while (is_game_live) {
+		if (fgets(in, MAX_COMMAND, stdin) == NULL) {
+			if (ferror(stdin)) {
+				printf(FGETS_ERROR);
+			}
+			return 0;
+		}
+		if (in[MAX_COMMAND - 1] == 0) {
+			printf("%s", COMMAND_TOO_LONG_ERROR);
+			continue;
+		}
+		is_game_live = execute_command(parse_command(in));
+	}
 	return 0;
 }

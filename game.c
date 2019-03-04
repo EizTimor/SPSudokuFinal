@@ -8,13 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "game.h"
-#include "solver.h"
-#include "parser.h"
 
 #define DEFAULT 0
 #define SIMPLE 3
-#define MAX_COMMAND 1024
 #define EXIT_MSG "Exiting...\n"
 #define SUCCESS_MSG "Puzzle solved successfully\n"
 #define VALIDATION_PASSED "Validation passed: board is solvable\n"
@@ -133,35 +129,24 @@ void print_board(Board* board) {
 }
 
 /*
- * prints the exit message and frees all memory.
- */
-void exit_game(Board* board) {
-	printf("%s", EXIT_MSG);
-	destroy_board(board);
-}
-
-/*
  * the function receives a command object as parsed by the parser and executes it.
- * return: 	0 - game continue, waiting for next command
- * 			1 - need to check if solved
- * 			RESTART - restart the game
- * 			EXIT - exit the game
  */
-void execute_command(Command* cmd) {
+int execute_command(Command* cmd) {
 	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
 	float float_param = cmd->float_param;
 	char* path = cmd->string_param;
 	switch (cmd->id) {
 	case INVALID_COMMAND:
 		printf(cmd->error_message);
-		break;
+		return 1;
 
 	case SOLVE:
 		board = load_board(path);
 		if (!board) {
 			printf(FOPEN_ERROR);
-			break;
+			return 1;
 		}
+		turns_list = create_turns_list();
 		current_game_mode = GAME_MODE_SOLVE;
 		print_board(board);
 		break;
@@ -175,18 +160,19 @@ void execute_command(Command* cmd) {
 			}
 		} else {
 			board = create_board(SIMPLE, SIMPLE);
+			turns_list = create_turns_list();
 		}
 		current_game_mode = GAME_MODE_EDIT;
 		print_board(board);
-		break;
+		return 1;
 
 	case MARK_ERORRS:
 		mark_errors = cmd->params[0];
-		break;
+		return 1;
 
 	case PRINT_BOARD:
 		print_board(board);
-		break;
+		return 1;
 
 	case SET:
 		if (x < 1 || x > board->board_size) {
@@ -203,7 +189,7 @@ void execute_command(Command* cmd) {
 		}
 		set_value(board, x, y, z);
 		print_board(board);
-		break;
+		return 1;
 
 	case VALIDATE:
 		if (is_there_errors(board)) {
@@ -215,7 +201,7 @@ void execute_command(Command* cmd) {
 		} else {
 			printf("Board is not solvable\n");
 		}
-		break;
+		return 1;
 
 	case GUESS:
 		if (is_there_errors(board)) {
@@ -227,40 +213,40 @@ void execute_command(Command* cmd) {
 			break;
 		}
 		print_board(board);
-		break;
+		return 1;
 
 	case GENERATE:
 		if (is_there_errors(board)) {
 			printf("Errors exist in board\n");
-			break;
+			return 1;
 		}
 		if (num_of_empty_cells(board) < x) {
 			printf("Errors: not enough empty cells in board\n");
-			break;
+			return 1;
 		}
 		generate_board(board, turns_list, x, y);
 		print_board(board);
-		break;
+		return 1;
 
 	case UNDO:
 		undo(board, turns_list);
 		print_board(board);
-		break;
+		return 1;
 
 	case REDO:
 		redo(board, turns_list);
 		print_board(board);
-		break;
+		return 1;
 
 	case SAVE:
 		if (current_game_mode == GAME_MODE_EDIT) {
 			if (is_there_errors(board)) {
 				printf("Errors exist in board, can not save\n");
-				break;
+				return 1;
 			}
 			if (!validate_board(board)) {
 				printf("Board is not solvable, can not save\n");
-				break;
+				return 1;
 			}
 			if (!save_board(board, path, 1)){
 				printf(FOPEN_ERROR);
@@ -270,39 +256,39 @@ void execute_command(Command* cmd) {
 				printf(FOPEN_ERROR);
 			}
 		}
-		break;
+		return 1;
 
 	case HINT:
 		get_hint(board, x, y, 1);
-		break;
+		return 1;
 
 	case GUESS_HINT:
 		get_hint(board, x, y, 0);
-		break;
+		return 1;
 
 	case NUM_SOLUTIONS:
 		if (is_there_errors(board)) {
 			printf("Errors exist in board\n");
-			break;
+			return 1;
 		}
 		printf("%d", number_of_solutions(board));
-		break;
+		return 1;
 
 	case AUTOFILL:
 		auto_fill(board, turns_list);
 		print_board(board);
-		break;
+		return 1;
 
 	case RESET:
 		reset_board(board, turns_list);
 		print_board(board);
-		break;
+		return 1;
 
 	case EXIT:
 		destroy_board(board);
 		destroy_turns_list(turns_list);
-		//TODO: update after finishing game flow.
-		break;
+		printf("Exiting...");
+		return 0;
 	}
 }
 
@@ -390,70 +376,3 @@ void destroy_board(Board* board) {
 	free(board->current);
 	free(board);
 }
-
-//int start_game(Board* board) {
-//	int is_done = 0, to_check = 0;
-//	char in[MAX_COMMAND];
-//	Command* current = NULL;
-//	print_board(board);
-//	while (!is_done) {
-//		while (current == NULL) {
-//			if (fgets(in, MAX_COMMAND, stdin) == NULL) {
-//				if (ferror(stdin)) {
-//					printf(FGETS_ERROR);
-//					exit(0);
-//				}
-//				exit_game(board);
-//				destroy_command(current);
-//				return 0;
-//			}
-//			if (in[0] != '\n') {
-//				current = parse_command(in);
-//				if (current->id == INVALID_COMMAND)
-//					printf("%s", current->error_message);
-//			}
-//		}
-//		to_check = execute_command(current, board);
-//		if (to_check == EXIT) {
-//			destroy_command(current);
-//			return 0;
-//		}
-//		if (to_check == RESTART) {
-//			destroy_command(current);
-//			return 1;
-//		}
-//		if (to_check)
-//			is_done = is_finished(board, 1);
-//		destroy_command(current);
-//		current = NULL;
-//	}
-//	printf("%s", SUCCESS_MSG);
-//
-//	/*
-//	 * game is complete, waiting to either "restart" or "exit" command
-//	 */
-//	while (1) {
-//		if (fgets(in, MAX_COMMAND, stdin) == NULL) {
-//			exit_game(board);
-//			return 0;
-//		}
-//		current = parse_command(in);
-//		//TODO: replace !current with "current->id == INVALID_COMMAND" and print reason
-//		if (!current || !(current->id == RESTART || current->id == EXIT)) {
-//			printf("%s", INV_COMMAND_MSG);
-//		} else {
-//			switch (execute_command(current, board)) {
-//			case RESTART:
-//				destroy_command(current);
-//				return 1;
-//
-//			case EXIT:
-//				destroy_command(current);
-//				return 0;
-//			}
-//		}
-//		destroy_command(current);
-//		current = NULL;
-//	}
-//	return 1;
-//}

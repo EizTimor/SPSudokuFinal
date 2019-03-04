@@ -4,9 +4,7 @@
  *  Created on: Dec 18, 2018
  *      Author: Timor Eizenman & Ido Lerer
  */
-
-#ifndef GAME_H_
-#define GAME_H_
+#include "parser.h"
 
 /*
  * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
@@ -181,24 +179,16 @@ void destroy_cell(Cell* cell);
  */
 void destroy_board(Board* board);
 
-/*
- * Function: start_game
- * ----------------------
- * 	Receives a board, and manages the game until it is finished.
- *
- *	board : the board of the game.
- *
- *	return : -1 if EOF comes up
- */
-int start_game(Board* board);
 
 /*
- * Function: exit_game
+ * Function: create_board_copy
  * ----------------------
- * 	Receives a board, and frees it's resources.
+ * 	Receives a command as parsed by the parser and executes it.
+ * 	Can execute any command which id is included in the command_id enum,
+ * 	while modifying board andturns_list structures saved in game.c
  *
- *	board : the board of the game.
+ *	cmd: the Command to be executed as returned by the parser.
+ *
+ * 	return : 1 if command was executed and game continues, 0 else.
  */
-void exit_game(Board* board);
-
-#endif /* GAME_H_ */
+int execute_command(Command* cmd);
