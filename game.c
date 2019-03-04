@@ -5,6 +5,8 @@
  *      Author: Timor Eizenman & Ido Lerer
  */
 
+
+#include "game.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
