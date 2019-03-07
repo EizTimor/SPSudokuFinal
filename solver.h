@@ -53,6 +53,23 @@ int is_value_valid(Board* game, int row, int col, int value);
 void set_value(Board* game, int row, int col, int value);
 
 /*
+ * Function: set_value_command
+ * ----------------------
+ * 	Receives a Board, and three integers representing row number, column number, value.
+ * 	It assigns the value to the cell, mark errors, and modifying options lists.
+ * 	It also insert the turn to the turns list.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ * 	value : an integer representing the value we are assigning.
+ * 	turns : the turns list of the current game.
+ *
+ * 	returns: ?
+ */
+void set_value_command(Board* game, int row, int col, int value, TurnsList* turns);
+
+/*
  * Function: update_options_after_set
  * ----------------------
  * 	Receives a Board, and two integers representing row number, column number.

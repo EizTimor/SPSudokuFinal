@@ -11,4 +11,6 @@
 
 int ilp(Board* game);
 
+int lp(Board* game);
+
 #endif /* ILP_SOLVER_H_ */

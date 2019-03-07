@@ -10,10 +10,12 @@
 #include <string.h>
 #include "stack.h"
 
+#define MALLOC_ERROR "Error: malloc has failed\n"
+
 Stack* init_stack() {
-    Stack* stack = malloc(sizeof(Stack));
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
     if (stack == NULL) {
-    	/* Error print needed */
+    	printf(MALLOC_ERROR);
 		exit(0);
 	}
     stack->top = NULL;
@@ -23,9 +25,9 @@ Stack* init_stack() {
 }
 
 void push(Stack* stack, int row, int col, int val) {
-    StackNode* node = malloc(sizeof (StackNode));
+    StackNode* node = (StackNode*)malloc(sizeof (StackNode));
     if (node == NULL) {
-    	/* Error print needed */
+    	printf(MALLOC_ERROR);
         exit(0);
     }
 

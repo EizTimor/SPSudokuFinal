@@ -263,8 +263,8 @@ int guess_solution(Board* game, float t) {
 		/* print error message */
 		return 0;
 	}
-	lp(game);
-	return 1;
+
+	return lp(game);
 }
 
 int num_of_empty_cells(Board* game) {
