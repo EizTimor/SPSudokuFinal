@@ -4,7 +4,8 @@
  *  Created on: 20 Dec 2018
  *      Authors: Ido Lerer, Timor Eizenman
  */
-
+#ifndef PARSER_H_
+#define PARSER_H_
 /*
  * Structure: Command
  * ------------------
@@ -59,3 +60,5 @@ void destroy_command(Command* cmd);
  *
  */
 void print_command(Command* cmd);
+
+#endif /* PARSER_H_ */

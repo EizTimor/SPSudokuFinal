@@ -1,3 +1,5 @@
+#ifndef GAME_H_
+#define GAME_H_
 /*
  * game.h
  *
@@ -5,6 +7,7 @@
  *      Author: Timor Eizenman & Ido Lerer
  */
 #include "parser.h"
+#include "turns_list.h"
 
 /*
  * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
@@ -192,3 +195,5 @@ void destroy_board(Board* board);
  * 	return : 1 if command was executed and game continues, 0 else.
  */
 int execute_command(Command* cmd);
+
+#endif /* GAME_H_ */

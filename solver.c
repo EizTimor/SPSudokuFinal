@@ -268,7 +268,7 @@ int guess_solution(Board* game, float t) {
 }
 
 int num_of_empty_cells(Board* game) {
-	int count, row, col;
+	int count = 0, row, col;
 
 	for (row = 0; row < game->board_size; row++)
 		for (col = 0; col < game->board_size; col++)
