@@ -17,6 +17,9 @@
 #define FOPEN_ERROR "Error: could not open file\n"
 #define FGETS_ERROR "Error: fgets has failed\n"
 
+game_mode current_game_mode = GAME_MODE_INIT;
+int mark_errors = 1;
+
 int insert_option(Cell* cell, int value) {
 	int index = 0;
 	OptionNode* last = cell->options->top->prev;

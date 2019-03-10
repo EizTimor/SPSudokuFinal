@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ILP_solver.h"
-#include "game.h"
-#include "time.h"
 
 int create_environment(GRBenv **env, GRBmodel **model) {
 	int e = 0;

@@ -21,9 +21,7 @@
 #define FOPEN_ERROR "Error: could not open file\n"
 #define FGETS_ERROR "Error: fgets has failed\n"
 
-extern game_mode current_game_mode;
 Board* board = NULL;
-extern int mark_errors;
 TurnsList* turns_list = NULL;
 
 int is_finished(Board* game) {

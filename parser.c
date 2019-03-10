@@ -13,10 +13,7 @@
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define WRONG_GAME_MODE_ERROR "Error: '%s' command is not available in the current game mode.\n the command is available in %s."
 
-extern game_mode current_game_mode;
-
-Command* create_command(int id, int params[3], float float_param,
-		char* string_param, char* error_message) {
+Command* create_command(int id, int params[3], float float_param, char* string_param, char* error_message) {
 	int i;
 	Command* cmd = (Command*) malloc(sizeof(Command));
 	if (cmd == NULL) {

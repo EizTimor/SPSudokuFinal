@@ -14,8 +14,8 @@ typedef enum game_mode {
 	GAME_MODE_INIT, GAME_MODE_EDIT, GAME_MODE_SOLVE
 } game_mode;
 
-game_mode current_game_mode = GAME_MODE_INIT;
-int mark_errors = 1;
+extern game_mode current_game_mode;
+extern int mark_errors;
 /*
  * Structure: OptionNode
  * ------------------
