@@ -12,7 +12,7 @@ main.o: main.c game.h parser.h solver.h
 	$(CC) $(COMP_FLAG) -c $*.c
 game.o: game.c game.h
 	$(CC) $(COMP_FLAG) -c $*.c
-ILP_solver.o: game.o gurobi_c.o ILP_solver.c ILP_solver.h
+ILP_solver.o: game.o ILP_solver.c ILP_solver.h
 	$(CC) $(COMP_FLAGS) $(GUROBI_COMP) -c $*.c
 parser.o: game.o parser.c parser.h
 	$(CC) $(COMP_FLAG) -c $*.c
