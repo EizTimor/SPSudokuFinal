@@ -9,7 +9,7 @@
 #define ILP_SOLVER_H_
 #include "game.h"
 #include "gurobi_c.h"
-#include "time.h"
+#include <time.h>
 
 int ilp(Board* game);
 
