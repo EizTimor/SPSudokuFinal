@@ -6,17 +6,6 @@
  *  Created on: Dec 18, 2018
  *      Author: Timor Eizenman & Ido Lerer
  */
-#include "parser.h"
-#include "turns_list.h"
-
-/*
- * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
- */
-enum command_id {
-	INVALID_COMMAND, SOLVE, EDIT, MARK_ERORRS, PRINT_BOARD, SET, VALIDATE,
-	GUESS, GENERATE, UNDO, REDO, SAVE, HINT, GUESS_HINT, NUM_SOLUTIONS, AUTOFILL,
-	RESET, EXIT
-};
 
 /*
  * an external variable representing the current game mode.
@@ -25,8 +14,8 @@ typedef enum game_mode {
 	GAME_MODE_INIT, GAME_MODE_EDIT, GAME_MODE_SOLVE
 } game_mode;
 
-extern game_mode current_game_mode;
-
+game_mode current_game_mode = GAME_MODE_INIT;
+int mark_errors = 1;
 /*
  * Structure: OptionNode
  * ------------------
@@ -124,6 +113,22 @@ int remove_option(Cell* cell, int value);
  * 	board : the board to be printed.
  *
  */
+
+/*
+ * Function: set_value
+ * ----------------------
+ * 	Receives a Board, and three integers representing row number, column number, value.
+ * 	It assigns the value to the cell, mark errors, and modifying options lists.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ * 	value : an integer representing the value we are assigning.
+ *
+ * 	returns: ?
+ */
+void set_value(Board* game, int row, int col, int value);
+
 void print_board(Board* board);
 
 /*
@@ -160,7 +165,7 @@ Board* create_board_copy(Board* game);
  *
  * 	return : a cell of sudoku board.
  */
-void create_cell(Cell* cell, int board_size);
+void create_cell(Cell* cell);
 
 /*
  * Function: destroy_cell
@@ -194,6 +199,6 @@ void destroy_board(Board* board);
  *
  * 	return : 1 if command was executed and game continues, 0 else.
  */
-int execute_command(Command* cmd);
+Board* create_board_copy(Board* game);
 
 #endif /* GAME_H_ */

@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "gurobi_c.h"
+#include "ILP_solver.h"
 #include "game.h"
 #include "time.h"
 

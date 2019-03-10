@@ -8,6 +8,7 @@
 #ifndef ILP_SOLVER_H_
 #define ILP_SOLVER_H_
 #include "game.h"
+#include "gurobi_c.h"
 
 int ilp(Board* game);
 

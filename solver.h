@@ -1,6 +1,3 @@
-#include "game.h"
-#include "turns_list.h"
-#include "stack.h"
 /*
  * solver.h
  *
@@ -10,6 +7,13 @@
 
 #ifndef SOLVER_H_
 #define SOLVER_H_
+
+#include "game.h"
+#include "turns_list.h"
+#include "game_utils.h"
+#include "stack.h"
+#include "ILP_solver.h"
+#include "parser.h"
 
 /*
  * Function: is_finished
@@ -36,21 +40,6 @@ int is_finished(Board* game);
  * 	returns: 1 if the value is legal, 0 otherwise.
  */
 int is_value_valid(Board* game, int row, int col, int value);
-
-/*
- * Function: set_value
- * ----------------------
- * 	Receives a Board, and three integers representing row number, column number, value.
- * 	It assigns the value to the cell, mark errors, and modifying options lists.
- *
- * 	game : the Board which holds the current board.
- * 	row : an integer representing the row coordinate of a cell.
- * 	col : an integer representing the column coordinate of a cell.
- * 	value : an integer representing the value we are assigning.
- *
- * 	returns: ?
- */
-void set_value(Board* game, int row, int col, int value);
 
 /*
  * Function: set_value_command
@@ -265,5 +254,7 @@ void redo(Board* game, TurnsList* turns);
  * 	returns: ?
  */
 void reset_board(Board* game, TurnsList* turns);
+
+int execute_command(Command* cmd);
 
 #endif /* SOLVER_H_ */

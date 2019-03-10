@@ -6,6 +6,18 @@
  */
 #ifndef PARSER_H_
 #define PARSER_H_
+
+#include "game.h"
+
+/*
+ * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
+ */
+enum command_id {
+	INVALID_COMMAND, SOLVE, EDIT, MARK_ERORRS, PRINT_BOARD, SET, VALIDATE,
+	GUESS, GENERATE, UNDO, REDO, SAVE, HINT, GUESS_HINT, NUM_SOLUTIONS, AUTOFILL,
+	RESET, EXIT
+};
+
 /*
  * Structure: Command
  * ------------------

@@ -8,11 +8,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "parser.h"
-#include "game.h"
 
 #define INV_COMMAND_ERROR "Error: invalid command\n"
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define WRONG_GAME_MODE_ERROR "Error: '%s' command is not available in the current game mode.\n the command is available in %s."
+
+extern game_mode current_game_mode;
 
 Command* create_command(int id, int params[3], float float_param,
 		char* string_param, char* error_message) {
@@ -221,11 +222,11 @@ int fill_float_params(const char* command_name, int num_params,
 	return 1;
 }
 
-int fill_string_params(const char* command_name, int num_params, char* param,
-		int optional, char* str, char* error_message) {
+int fill_string_params(const char* command_name, int num_params, char* param, int optional, char* str, char* error_message) {
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
+	printf("%s", param);
 	while ((token = strtok(str, delim)) != NULL) {
 		if (i < num_params) {
 			param = token;

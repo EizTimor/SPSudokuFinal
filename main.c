@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "game.h"
+#include "solver.h"
 #include "parser.h"
 
 #define MAX_COMMAND 257

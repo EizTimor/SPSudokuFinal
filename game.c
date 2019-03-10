@@ -13,18 +13,9 @@
 
 #define DEFAULT 0
 #define SIMPLE 3
-#define EXIT_MSG "Exiting...\n"
-#define SUCCESS_MSG "Puzzle solved successfully\n"
-#define VALIDATION_PASSED "Validation passed: board is solvable\n"
-#define VALIDATION_FAILED "Validation failed: board is unsolvable\n"
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define FOPEN_ERROR "Error: could not open file\n"
 #define FGETS_ERROR "Error: fgets has failed\n"
-
-game_mode current_game_mode = GAME_MODE_INIT;
-Board* board = NULL;
-int mark_errors = 1;
-TurnsList* turns_list = NULL;
 
 int insert_option(Cell* cell, int value) {
 	int index = 0;
@@ -130,167 +121,113 @@ void print_board(Board* board) {
 	}
 }
 
-/*
- * the function receives a command object as parsed by the parser and executes it.
- */
-int execute_command(Command* cmd) {
-	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
-	float float_param = cmd->float_param;
-	char* path = cmd->string_param;
-	switch (cmd->id) {
-	case INVALID_COMMAND:
-		printf(cmd->error_message);
-		return 1;
+int is_value_valid(Board* game, int row, int col, int value) {
+	int i = 0, j = 0;
+	int rows_to_add = 0, cols_to_add = 0;
 
-	case SOLVE:
-		board = load_board(path);
-		if (!board) {
-			printf(FOPEN_ERROR);
-			return 1;
+	for (; i < game->board_size; i++) {
+		if (game->current[row][i].value == value)
+			return 0;
+		if (game->current[i][col].value == value)
+			return 0;
+	}
+
+	rows_to_add = (row / game->block_row) * game->block_row;
+	cols_to_add = (col / game->block_col) * game->block_col;
+
+	for (i = rows_to_add; i < rows_to_add + game->block_row; i++)
+		for (j = cols_to_add; j < cols_to_add + game->block_col; j++)
+			if (game->current[i][j].value == value)
+				return 0;
+
+	return 1;
+}
+
+void check_specific_error(Board* game, int row, int col) {
+	int i, j, value;
+	int rows_to_add, cols_to_add;
+
+	/* check the row */
+	for (i = 0; i < game->board_size; i++) {
+		value = game->current[row][i].value;
+		game->current[row][i].value = DEFAULT;
+		if (is_value_valid(game, row, i, value))
+			game->current[row][i].isError = 0;
+		else
+			game->current[row][i].isError = 1;
+		game->current[row][i].value = value;
+	}
+
+	/* check the column */
+	for (i = 0; i < game->board_size; i++) {
+		value = game->current[i][col].value;
+		game->current[i][col].value = DEFAULT;
+		if (is_value_valid(game, i, col, value))
+			game->current[i][col].isError = 0;
+		else
+			game->current[i][col].isError = 1;
+		game->current[i][col].value = value;
+	}
+
+	/* check the block */
+	rows_to_add = (row / game->block_row) * game->block_row;
+	cols_to_add = (col / game->block_col) * game->block_col;
+
+	for (i = rows_to_add; i < rows_to_add + game->block_row; i++)
+		for (j = cols_to_add; j < cols_to_add + game->block_col; j++) {
+			value = game->current[i][j].value;
+			game->current[i][j].value = DEFAULT;
+			if (is_value_valid(game, i, col, value))
+				game->current[i][j].isError = 0;
+			else
+				game->current[i][j].isError = 1;
+			game->current[i][j].value = value;
 		}
-		turns_list = create_turns_list();
-		current_game_mode = GAME_MODE_SOLVE;
-		print_board(board);
-		break;
+}
 
-	case EDIT:
-		if (path) {
-			board = load_board(path);
-			if (!board) {
-				printf(FOPEN_ERROR);
-				break;
-			}
-		} else {
-			board = create_board(SIMPLE, SIMPLE);
-			turns_list = create_turns_list();
+void update_cell_options(Board* game, int row, int col) {
+	int i = 0;
+
+	while (game->current[row][col].options->length > 0) {
+		remove_option(&game->current[row][col],
+				game->current[row][col].options->top->value);
+
+		if (game->current[row][col].value != DEFAULT)
+			return;
+
+		for (; i < game->board_size; i++) {
+			if (is_value_valid(game, row, col, i))
+				insert_option(&game->current[row][col], i);
 		}
-		current_game_mode = GAME_MODE_EDIT;
-		print_board(board);
-		return 1;
+	}
+}
 
-	case MARK_ERORRS:
-		mark_errors = cmd->params[0];
-		return 1;
+void update_options_after_set(Board* game, int row, int col) {
+	int i, j;
+	int rows_to_add, cols_to_add;
 
-	case PRINT_BOARD:
-		print_board(board);
-		return 1;
+	/* modify the row and column */
+	for (i = 0; i < game->board_size; i++) {
+		update_cell_options(game, row, i);
+		update_cell_options(game, i, col);
+	}
 
-	case SET:
-		if (x < 1 || x > board->board_size) {
-			printf("Error: first parameter out of range\n");
-			break;
+	/* modify the block */
+	rows_to_add = (row / game->block_row) * game->block_row;
+	cols_to_add = (col / game->block_col) * game->block_col;
+
+	for (i = rows_to_add; i < rows_to_add + game->block_row; i++)
+		for (j = cols_to_add; j < cols_to_add + game->block_col; j++) {
+			update_cell_options(game, i, j);
 		}
-		if (y < 1 || y > board->board_size) {
-			printf("Error: second parameter out of range\n");
-			break;
-		}
-		if (z < 0 || z > board->board_size) {
-			printf("Error: third parameter out of range\n");
-			break;
-		}
-		set_value(board, x, y, z);
-		print_board(board);
-		return 1;
+}
 
-	case VALIDATE:
-		if (is_there_errors(board)) {
-			printf("Errors exist in board\n");
-			break;
-		}
-		if (validate_board(board)) {
-			printf("Board is solvable\n");
-		} else {
-			printf("Board is not solvable\n");
-		}
-		return 1;
-
-	case GUESS:
-		if (is_there_errors(board)) {
-			printf("Errors exist in board\n");
-			break;
-		}
-		if (!guess_solution(board, float_param)) {
-			printf("Could not find a solution with given threshold parameter");
-			break;
-		}
-		print_board(board);
-		return 1;
-
-	case GENERATE:
-		if (is_there_errors(board)) {
-			printf("Errors exist in board\n");
-			return 1;
-		}
-		if (num_of_empty_cells(board) < x) {
-			printf("Errors: not enough empty cells in board\n");
-			return 1;
-		}
-		generate_board(board, turns_list, x, y);
-		print_board(board);
-		return 1;
-
-	case UNDO:
-		undo(board, turns_list);
-		print_board(board);
-		return 1;
-
-	case REDO:
-		redo(board, turns_list);
-		print_board(board);
-		return 1;
-
-	case SAVE:
-		if (current_game_mode == GAME_MODE_EDIT) {
-			if (is_there_errors(board)) {
-				printf("Errors exist in board, can not save\n");
-				return 1;
-			}
-			if (!validate_board(board)) {
-				printf("Board is not solvable, can not save\n");
-				return 1;
-			}
-			if (!save_board(board, path, 1)){
-				printf(FOPEN_ERROR);
-			}
-		} else {
-			if(!save_board(board, path, 0)){
-				printf(FOPEN_ERROR);
-			}
-		}
-		return 1;
-
-	case HINT:
-		get_hint(board, x, y, 1);
-		return 1;
-
-	case GUESS_HINT:
-		get_hint(board, x, y, 0);
-		return 1;
-
-	case NUM_SOLUTIONS:
-		if (is_there_errors(board)) {
-			printf("Errors exist in board\n");
-			return 1;
-		}
-		printf("%d", number_of_solutions(board));
-		return 1;
-
-	case AUTOFILL:
-		auto_fill(board, turns_list);
-		print_board(board);
-		return 1;
-
-	case RESET:
-		reset_board(board, turns_list);
-		print_board(board);
-		return 1;
-
-	case EXIT:
-		destroy_board(board);
-		destroy_turns_list(turns_list);
-		printf("Exiting...");
-		return 0;
+void set_value(Board* game, int row, int col, int value) {
+	int prev_val = game->current[row][col].value;
+	if (value != prev_val) {
+		game->current[row][col].value = value;
+		check_specific_error(game, row, col);
+		update_options_after_set(game, row, col);
 	}
 }
 
@@ -319,7 +256,7 @@ Board* create_board(int rows, int cols) {
 			exit(0);
 		}
 		for (j = 0; j < board->board_size; j++)
-			create_cell(&current[i][j], board->board_size);
+			create_cell(&current[i][j]);
 	}
 	return board;
 }
@@ -344,8 +281,7 @@ Board* create_board_copy(Board* game) {
 	return newGame;
 }
 
-void create_cell(Cell* cell, int board_size) {
-
+void create_cell(Cell* cell) {
 	cell->isFixed = 0;
 	cell->value = DEFAULT;
 	if ((cell->options = (OptionsList *) malloc(sizeof(OptionsList))) == NULL) {
