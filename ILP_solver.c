@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "ILP_solver.h"
 
 int create_environment(GRBenv **env, GRBmodel **model) {
@@ -300,14 +301,14 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 	int i, j, k, e = 0;
 	int out_row, out_col, in_row, in_col, index;
 	int c_ind[1];
-	double c_val[1] = { 1 };
+	double c_val[1] = { 1.0 };
 
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			for (k = 0; k < game->board_size; k++) {
 				(*ind)[k] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k;
-				(*obj)[k] = 1;
+				(*obj)[k] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
 			GRB_LESS_EQUAL, 1.0, NULL);
@@ -323,7 +324,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 			for (j = 0; j < game->board_size; j++) {
 				(*ind)[j] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k;
-				(*obj)[j] = 1;
+				(*obj)[j] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
 			GRB_LESS_EQUAL, 1.0, NULL);
@@ -339,7 +340,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 			for (i = 0; i < game->board_size; i++) {
 				(*ind)[i] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k;
-				(*obj)[i] = 1;
+				(*obj)[i] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
 			GRB_LESS_EQUAL, 1.0, NULL);
@@ -423,61 +424,63 @@ void lp_solution_to_board(Board* game, double* sol) {
 }
 
 int lp(Board* game) {
-GRBenv* env = NULL;
-GRBmodel* model = NULL;
-int e = 0;
-double* sol;
-int* ind;
-double* obj;
-char* vtype;
-double optimstatus;
-int status = 1;
+	GRBenv* env = NULL;
+	GRBmodel* model = NULL;
+	int e = 0;
+	double* sol;
+	int* ind;
+	double* obj;
+	char* vtype;
+	double optimstatus;
+	int status = 1;
 
-ind = (int*) malloc(game->board_size * sizeof(int));
-sol = (double*) malloc(
-		game->board_size * game->board_size * game->board_size
-				* sizeof(double));
-obj = (double*) malloc(game->board_size * sizeof(double));
-vtype = (char*) malloc(
-		game->board_size * game->board_size * game->board_size * sizeof(char));
+	ind = (int*) malloc(game->board_size * sizeof(int));
+	sol = (double*) malloc(
+			game->board_size * game->board_size * game->board_size
+					* sizeof(double));
+	obj = (double*) malloc(game->board_size * sizeof(double));
+	vtype = (char*) malloc(
+			game->board_size * game->board_size * game->board_size
+					* sizeof(char));
 
-if (ind == NULL || sol == NULL || obj == NULL || vtype == NULL) {
-	printf("Error: lp malloc has failed\n");
-	return 0;
-}
+	if (ind == NULL || sol == NULL || obj == NULL || vtype == NULL) {
+		printf("Error: lp malloc has failed\n");
+		return 0;
+	}
 
-status = create_environment(&env, &model);
-status = status && lp_add_variables(&env, &model, &vtype, game->board_size);
-status = status && lp_add_constraints(game, &env, &model, &obj, &ind);
+	status = create_environment(&env, &model);
+	status = status && lp_add_variables(&env, &model, &vtype, game->board_size);
+	status = status && lp_add_constraints(game, &env, &model, &obj, &ind);
 
-e = GRBoptimize(model);
-if (e) {
-	printf("ERROR %d GRBoptimize(): %s\n", e, GRBgeterrormsg(env));
-	status = 0;
-}
-
-if (status) {
-	e = GRBgetdblattr(model, GRB_INT_ATTR_NUMVARS, &optimstatus);
+	e = GRBoptimize(model);
 	if (e) {
-		printf("ERROR %d GRBgetintattr(): %s\n", e, GRBgeterrormsg(env));
+		printf("ERROR %d GRBoptimize(): %s\n", e, GRBgeterrormsg(env));
 		status = 0;
 	}
-}
 
-if (optimstatus == GRB_OPTIMAL) {
-	e = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0,
-			game->board_size * game->board_size * game->board_size, sol);
-	if (e) {
-		printf("ERROR %d GRBgetdblattrarray(): %s\n", e, GRBgeterrormsg(env));
-		status = 0;
+	if (status) {
+		e = GRBgetdblattr(model, GRB_INT_ATTR_NUMVARS, &optimstatus);
+		if (e) {
+			printf("ERROR %d GRBgetintattr(): %s\n", e, GRBgeterrormsg(env));
+			status = 0;
+		}
 	}
-} else
-	status = 0;
 
-if (status)
-	lp_solution_to_board(game, sol);
+	if (optimstatus == GRB_OPTIMAL) {
+		e = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0,
+				game->board_size * game->board_size * game->board_size, sol);
+		if (e) {
+			printf("ERROR %d GRBgetdblattrarray(): %s\n", e,
+					GRBgeterrormsg(env));
+			status = 0;
+		}
+	} else
+		status = 0;
 
-free_all(env, model, sol, ind, obj, vtype);
+	if (status)
+		lp_solution_to_board(game, sol);
 
-return status;
+	free_all(env, model, sol, ind, obj, vtype);
+
+	return status;
 }

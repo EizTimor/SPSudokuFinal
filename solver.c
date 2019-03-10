@@ -393,7 +393,7 @@ int execute_command(Command* cmd) {
 	char* path = cmd->string_param;
 	switch (cmd->id) {
 	case INVALID_COMMAND:
-		printf(cmd->error_message);
+		printf("%s/n", cmd->error_message);
 		return 1;
 
 	case SOLVE:
