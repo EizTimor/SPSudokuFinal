@@ -36,8 +36,8 @@ typedef struct command_t{
 	int id;
 	int params[3];
 	float float_param;
-	char* string_param;
-	char* error_message;
+	char *string_param;
+	char *error_message;
 } Command;
 
 /*

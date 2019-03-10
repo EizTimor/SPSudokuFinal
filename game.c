@@ -86,16 +86,21 @@ void print_separator_row(int row_length) {
 }
 
 void print_cell(Cell *cell) {
-	char fix_sign = cell->isFixed ? '.' : ' ';
-	char error_sign =
-			(cell->isError
-					&& (current_game_mode == GAME_MODE_EDIT || mark_errors)) ?
-					'*' : ' ';
+	char extra_sign;
 	int val = cell->value;
+	if (cell->isFixed){
+		extra_sign = '.';
+	} else{
+		if (cell->isError && (current_game_mode == GAME_MODE_EDIT || mark_errors)){
+			extra_sign = '*';
+		} else {
+			extra_sign = ' ';
+		}
+	}
 	if (val)
-		printf(" %2d%c%c", val, fix_sign, error_sign);
+		printf(" %2d%c", val, extra_sign);
 	else
-		printf("   %c%c", fix_sign, error_sign);
+		printf("   %c", extra_sign);
 }
 
 void print_row(Board *board, int index) {
@@ -106,7 +111,7 @@ void print_row(Board *board, int index) {
 			print_cell(&board->current[index][j]);
 			j++;
 		}
-		printf(" |");
+		printf("|");
 	}
 	printf("\n");
 }
@@ -114,6 +119,7 @@ void print_row(Board *board, int index) {
 void print_board(Board* board) {
 	int index = 0, j;
 	int row_length = 4 * board->board_size + board->block_row + 1;
+	printf("N: %d, m: %d, row_length: %d\n", board->board_size, board->block_row, row_length);
 	print_separator_row(row_length);
 	while (index < board->board_size) {
 		for (j = 0; j < board->block_row; j++) {

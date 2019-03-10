@@ -115,6 +115,8 @@ void clean_from_current(TurnsList* turns) {
 
 void destroy_turns_list(TurnsList* turns) {
 	TurnNode* node;
+	if(!turns)
+		return;
 
 	while (!turns->length) {
 		node = turns->top->next;

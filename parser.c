@@ -9,11 +9,12 @@
 #include <stdlib.h>
 #include "parser.h"
 
-#define INV_COMMAND_ERROR "Error: invalid command\n"
+#define INV_COMMAND_ERROR "Error: invalid command"
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define WRONG_GAME_MODE_ERROR "Error: '%s' command is not available in the current game mode.\n the command is available in %s."
 
-Command* create_command(int id, int params[3], float float_param, char* string_param, char* error_message) {
+Command* create_command(int id, int params[3], float float_param,
+		char* string_param, char* error_message) {
 	int i;
 	Command* cmd = (Command*) malloc(sizeof(Command));
 	if (cmd == NULL) {
@@ -21,8 +22,14 @@ Command* create_command(int id, int params[3], float float_param, char* string_p
 		exit(0);
 	}
 	cmd->id = id;
-	cmd->error_message = error_message;
-	cmd->string_param = string_param;
+	if (error_message) {
+		cmd->error_message = malloc((strlen(error_message) + 1) * sizeof(char));
+		strcpy(cmd->error_message, error_message);
+	}
+	if (string_param) {
+		cmd->string_param = malloc((strlen(string_param) + 1) * sizeof(char));
+		strcpy(cmd->string_param, string_param);
+	}
 	cmd->float_param = float_param;
 	for (i = 0; i < 3; i++) {
 		cmd->params[i] = params[i];
@@ -33,6 +40,10 @@ Command* create_command(int id, int params[3], float float_param, char* string_p
 void destroy_command(Command* cmd) {
 	if (!cmd)
 		return;
+	if(cmd->error_message)
+		free(cmd->error_message);
+	if(cmd->string_param)
+		free(cmd->string_param);
 	free(cmd);
 	return;
 }
@@ -172,11 +183,11 @@ int is_params_optional(enum command_id id) {
 }
 
 int fill_int_params(const char* command_name, int num_params, int params[3],
-		int optional, char* str, char* error_message) {
+		int optional, char* error_message) {
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
-	while ((token = strtok(str, delim)) != NULL) {
+	while ((token = strtok(NULL, delim)) != NULL) {
 		if (i < num_params) {
 			params[i] = atoi(token);
 		} else {
@@ -185,6 +196,7 @@ int fill_int_params(const char* command_name, int num_params, int params[3],
 					command_name, num_params);
 			return 0;
 		}
+		i++;
 	}
 	if (i < num_params && !optional) {
 		sprintf(error_message,
@@ -196,11 +208,11 @@ int fill_int_params(const char* command_name, int num_params, int params[3],
 }
 
 int fill_float_params(const char* command_name, int num_params,
-		float* float_param, int optional, char* str, char* error_message) {
+		float* float_param, int optional, char* error_message) {
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
-	while ((token = strtok(str, delim)) != NULL) {
+	while ((token = strtok(NULL, delim)) != NULL) {
 		if (i < num_params) {
 			*float_param = atof(token);
 		} else {
@@ -209,6 +221,7 @@ int fill_float_params(const char* command_name, int num_params,
 					command_name, num_params);
 			return 0;
 		}
+		i++;
 	}
 	if (i < num_params && !optional) {
 		sprintf(error_message,
@@ -219,12 +232,13 @@ int fill_float_params(const char* command_name, int num_params,
 	return 1;
 }
 
-int fill_string_params(const char* command_name, int num_params, char* param, int optional, char* str, char* error_message) {
+int fill_string_params(const char* command_name, int num_params, char* param,
+		int optional, char* error_message) {
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
 	printf("%s", param);
-	while ((token = strtok(str, delim)) != NULL) {
+	while ((token = strtok(NULL, delim)) != NULL) {
 		if (i < num_params) {
 			param = token;
 		} else {
@@ -233,6 +247,7 @@ int fill_string_params(const char* command_name, int num_params, char* param, in
 					command_name, num_params);
 			return 0;
 		}
+		i++;
 	}
 	if (i < num_params && !optional) {
 		sprintf(error_message,
@@ -252,39 +267,39 @@ Command* parse_command(char *str) {
 	const char* command_modes;
 	id = get_command_id(token);
 	if (id == -1) {
-		return create_command(INVALID_COMMAND, params, float_param, string_param,
-				INV_COMMAND_ERROR);
+		return create_command(INVALID_COMMAND, params, float_param,
+				string_param, INV_COMMAND_ERROR);
 	}
 	command_name = get_command_name(id);
 	command_modes = get_command_modes(id);
 	if (!is_command_available(id)) {
 		sprintf(error_message, WRONG_GAME_MODE_ERROR, command_name,
 				command_modes);
-		return create_command(INVALID_COMMAND, params, float_param, string_param,
-				error_message);
+		return create_command(INVALID_COMMAND, params, float_param,
+				string_param, error_message);
 	}
 	switch (id) {
 	case SOLVE:
 	case EDIT:
 	case SAVE:
 		if (!fill_string_params(get_command_name(id), num_of_params(id),
-				string_param, is_params_optional(id), str, error_message)) {
-			return create_command(INVALID_COMMAND, params, float_param, string_param,
-					error_message);
+				string_param, is_params_optional(id), error_message)) {
+			return create_command(INVALID_COMMAND, params, float_param,
+					string_param, error_message);
 		} else
 			return create_command(id, params, float_param, string_param, NULL);
 	case GUESS:
 		if (!fill_float_params(get_command_name(id), num_of_params(id),
-				&float_param, is_params_optional(id), str, error_message)) {
-			return create_command(INVALID_COMMAND, params, float_param, string_param,
-					error_message);
+				&float_param, is_params_optional(id), error_message)) {
+			return create_command(INVALID_COMMAND, params, float_param,
+					string_param, error_message);
 		} else
 			return create_command(id, params, float_param, string_param, NULL);
 	default:
 		if (!fill_int_params(get_command_name(id), num_of_params(id), params,
-				is_params_optional(id), str, error_message)) {
-			return create_command(INVALID_COMMAND, params, float_param, string_param,
-					error_message);
+				is_params_optional(id), error_message)) {
+			return create_command(INVALID_COMMAND, params, float_param,
+					string_param, error_message);
 		} else
 			return create_command(id, params, float_param, string_param, NULL);
 	}
@@ -296,10 +311,13 @@ void print_command(Command* cmd) {
 		return;
 	id = cmd->id;
 	num_params = num_of_params(id);
-	printf("%s", get_command_name(id));
+	printf(
+			"name: %s\nid: %d\nstring_param: %s\nfloat_param: %f\nerror_message: %s\nint params:",
+			get_command_name(id), cmd->id, cmd->string_param, cmd->float_param,
+			cmd->error_message);
 	while (i < num_params) {
 		printf(" %d", cmd->params[i]);
 		i++;
 	}
-	printf("%s", cmd->string_param);
+	printf("\n");
 }

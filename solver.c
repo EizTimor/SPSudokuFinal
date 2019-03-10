@@ -28,7 +28,8 @@ int is_finished(Board* game) {
 	return (!num_of_empty_cells(game) && !is_there_errors(game));
 }
 
-void set_value_command(Board* game, int row, int col, int value, TurnsList* turns) {
+void set_value_command(Board* game, int row, int col, int value,
+		TurnsList* turns) {
 	int prev_val = game->current[row][col].value;
 	MovesList* moves;
 	set_value(game, row, col, value);
@@ -90,7 +91,8 @@ int number_of_solutions(Board* game) {
 	while (!is_empty(stack)) {
 		if (is_value_valid(game, stack->top->row, stack->top->column,
 				stack->top->value)) {
-			set_value(game,stack->top->row, stack->top->column, stack->top->value);
+			set_value(game, stack->top->row, stack->top->column,
+					stack->top->value);
 			if (!get_first_empty_cell(game, &row, &col))
 				push(stack, row, col, 1);
 			else { /* board is complete */
@@ -102,7 +104,8 @@ int number_of_solutions(Board* game) {
 					while (!is_empty(stack)
 							&& stack->top->value == game->board_size) { /* pop until we find a cell to modify */
 						pop(stack, node);
-						set_value(game, stack->top->row, stack->top->column, DEFAULT);
+						set_value(game, stack->top->row, stack->top->column,
+								DEFAULT);
 					}
 					if (!is_empty(stack))
 						stack->top->value = stack->top->value + 1;
@@ -114,7 +117,8 @@ int number_of_solutions(Board* game) {
 			else {
 				while (!is_empty(stack) && stack->top->value == game->board_size) { /* pop until we find a cell to modify */
 					pop(stack, node);
-					set_value(game, stack->top->row, stack->top->column, DEFAULT);
+					set_value(game, stack->top->row, stack->top->column,
+							DEFAULT);
 				}
 				if (!is_empty(stack))
 					stack->top->value = stack->top->value + 1;
@@ -222,7 +226,8 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 				}
 				rows[j] = rRow;
 				cols[j] = rCol;
-				set_value(game, rRow, rCol, get_random_value(&game->current[rRow][rCol]));
+				set_value(game, rRow, rCol,
+						get_random_value(&game->current[rRow][rCol]));
 			} else
 				j--;
 		}
@@ -262,7 +267,8 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	}
 
 	for (k = 0; k < count; k++)
-		insert_move(moves, rows[k], cols[k], DEFAULT, game->current[rows[k]][cols[k]].value);
+		insert_move(moves, rows[k], cols[k], DEFAULT,
+				game->current[rows[k]][cols[k]].value);
 
 	insert_turn(turns, moves);
 
@@ -318,7 +324,8 @@ int auto_fill(Board* game, TurnsList* turns) {
 	for (row = 0; row < game->board_size; row++)
 		for (col = 0; col < game->board_size; col++) {
 			if (copy->current[row][col].options->length == 1) {
-				set_value(game, row, col, copy->current[row][col].options->top->value);
+				set_value(game, row, col,
+						copy->current[row][col].options->top->value);
 				insert_move(moves, row, col, DEFAULT,
 						game->current[row][col].value);
 				printf("Cell <%d,%d> has been auto-filled with the value %d\n",
@@ -367,8 +374,7 @@ void redo(Board* game, TurnsList* turns) {
 	amount = turns->current->next->changes->length;
 
 	while (amount > 0) {
-		set_value(game, move->row, move->col,
-				move->prev_val);
+		set_value(game, move->row, move->col, move->prev_val);
 		printf("Cell <%d,%d> has been modified back to %d/n", move->row,
 				move->col, move->prev_val);
 		move = move->next;
@@ -391,9 +397,13 @@ int execute_command(Command* cmd) {
 	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
 	float float_param = cmd->float_param;
 	char* path = cmd->string_param;
+/*
+ * 	printf("command recieved, info:\n");
+ *	print_command(cmd);
+ */
 	switch (cmd->id) {
 	case INVALID_COMMAND:
-		printf("%s/n", cmd->error_message);
+		printf("%s\n", cmd->error_message);
 		return 1;
 
 	case SOLVE:
@@ -504,11 +514,11 @@ int execute_command(Command* cmd) {
 				printf("Board is not solvable, can not save\n");
 				return 1;
 			}
-			if (!save_board(board, path, 1)){
+			if (!save_board(board, path, 1)) {
 				printf(FOPEN_ERROR);
 			}
 		} else {
-			if(!save_board(board, path, 0)){
+			if (!save_board(board, path, 0)) {
 				printf(FOPEN_ERROR);
 			}
 		}
@@ -543,7 +553,7 @@ int execute_command(Command* cmd) {
 	case EXIT:
 		destroy_board(board);
 		destroy_turns_list(turns_list);
-		printf("Exiting...");
+		printf("Exiting...\n");
 		return 0;
 	}
 	return 1;
