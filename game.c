@@ -160,7 +160,7 @@ void check_specific_error(Board* game, int row, int col) {
 	for (i = 0; i < game->board_size; i++) {
 		value = game->current[row][i].value;
 		game->current[row][i].value = DEFAULT;
-		if (is_value_valid(game, row, i, value))
+		if (value == DEFAULT || is_value_valid(game, row, i, value))
 			game->current[row][i].isError = 0;
 		else
 			game->current[row][i].isError = 1;
@@ -171,7 +171,7 @@ void check_specific_error(Board* game, int row, int col) {
 	for (i = 0; i < game->board_size; i++) {
 		value = game->current[i][col].value;
 		game->current[i][col].value = DEFAULT;
-		if (is_value_valid(game, i, col, value))
+		if (value == DEFAULT || is_value_valid(game, i, col, value))
 			game->current[i][col].isError = 0;
 		else
 			game->current[i][col].isError = 1;
@@ -186,7 +186,7 @@ void check_specific_error(Board* game, int row, int col) {
 		for (j = cols_to_add; j < cols_to_add + game->block_col; j++) {
 			value = game->current[i][j].value;
 			game->current[i][j].value = DEFAULT;
-			if (is_value_valid(game, i, col, value))
+			if (value == DEFAULT || is_value_valid(game, i, col, value))
 				game->current[i][j].isError = 0;
 			else
 				game->current[i][j].isError = 1;
@@ -232,11 +232,11 @@ void update_options_after_set(Board* game, int row, int col) {
 }
 
 void set_value(Board* game, int row, int col, int value) {
-	int prev_val = game->current[row][col].value;
+	int prev_val = game->current[row - 1][col - 1].value;
 	if (value != prev_val) {
-		game->current[row][col].value = value;
-		check_specific_error(game, row, col);
-		update_options_after_set(game, row, col);
+		game->current[row - 1][col - 1].value = value;
+		check_specific_error(game, row - 1, col - 1);
+		update_options_after_set(game, row - 1, col - 1);
 	}
 }
 

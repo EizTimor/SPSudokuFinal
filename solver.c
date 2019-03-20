@@ -30,11 +30,11 @@ int is_finished(Board* game) {
 
 void set_value_command(Board* game, int row, int col, int value,
 		TurnsList* turns) {
-	int prev_val = game->current[row][col].value;
+	int prev_val = game->current[row - 1][col - 1].value;
 	MovesList* moves;
 	set_value(game, row, col, value);
 	moves = create_moves_list();
-	insert_move(moves, row, col, prev_val, value);
+	insert_move(moves, row - 1, col - 1, prev_val, value);
 	insert_turn(turns, moves);
 }
 
@@ -139,7 +139,7 @@ void check_errors_in_board(Board* game) {
 		for (col = 0; col < game->board_size; col++) {
 			value = game->current[row][col].value;
 			game->current[row][col].value = DEFAULT;
-			if (is_value_valid(game, row, col, value))
+			if (value == DEFAULT || is_value_valid(game, row, col, value))
 				game->current[row][col].isError = 0;
 			else
 				game->current[row][col].isError = 1;
