@@ -64,11 +64,13 @@ typedef struct turn_node {
  *
  * 	top : a pointer to the first element of the list.
  * 	current : a pointer to the last move we've done.
+ * 	pos : an integer representing if we have any moves left to undo.
  * 	length : an integer representing the length of the list.
  */
 typedef struct {
 	TurnNode* top;
 	TurnNode* current;
+	int pos;
 	int length;
 } TurnsList;
 

@@ -11,7 +11,7 @@
 #include "turns_list.h"
 
 MovesList* create_moves_list() {
-	MovesList* list = (MovesList*)malloc(sizeof(MovesList));
+	MovesList* list = (MovesList*) malloc(sizeof(MovesList));
 	if (list == NULL) {
 		/* error message */
 		exit(0);
@@ -24,7 +24,7 @@ MovesList* create_moves_list() {
 }
 
 void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) {
-	MoveNode* node = (MoveNode*)malloc(sizeof(MoveNode));
+	MoveNode* node = (MoveNode*) malloc(sizeof(MoveNode));
 
 	if (node == NULL) {
 		/* error message */
@@ -41,8 +41,7 @@ void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) 
 		moves->top->prev->next = node;
 		moves->top->prev = node;
 		node->next = moves->top;
-	}
-	else {
+	} else {
 		node->prev = node;
 		node->next = node;
 		moves->top = node;
@@ -65,7 +64,7 @@ void destroy_moves_list(MovesList* moves) {
 }
 
 TurnsList* create_turns_list() {
-	TurnsList* list = (TurnsList*)malloc(sizeof(TurnsList));
+	TurnsList* list = (TurnsList*) malloc(sizeof(TurnsList));
 
 	if (list == NULL) {
 		/* error message */
@@ -73,6 +72,7 @@ TurnsList* create_turns_list() {
 	}
 
 	list->length = 0;
+	list->pos = 0;
 	list->top = NULL;
 	list->current = NULL;
 
@@ -80,21 +80,26 @@ TurnsList* create_turns_list() {
 }
 
 void insert_turn(TurnsList* turns, MovesList* changes) {
-	TurnNode* node = (TurnNode*)malloc(sizeof(TurnNode));
+	TurnNode* node = (TurnNode*) malloc(sizeof(TurnNode));
 
 	if (node == NULL) {
 		/* error message */
 		exit(0);
 	}
-
 	node->changes = changes;
-
-	node->prev = turns->top->prev;
-	turns->top->prev->next = node;
-	turns->top->prev = node;
-	node->next = NULL;
+	if (turns->length != 0) {
+		node->prev = turns->top->prev;
+		turns->top->prev->next = node;
+		turns->top->prev = node;
+	}
+	else {
+		node->prev = node;
+		turns->top = node;
+	}
+	node->next = turns->top;
 	turns->current = node;
 	turns->length = turns->length + 1;
+	turns->pos += 1;
 }
 
 void clean_from_current(TurnsList* turns) {
@@ -111,11 +116,12 @@ void clean_from_current(TurnsList* turns) {
 		turns->length = turns->length - 1;
 		turn = tmp;
 	}
+	turns->pos = turns->length;
 }
 
 void destroy_turns_list(TurnsList* turns) {
 	TurnNode* node;
-	if(!turns)
+	if (!turns)
 		return;
 
 	while (!turns->length) {

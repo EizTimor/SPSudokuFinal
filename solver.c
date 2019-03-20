@@ -30,11 +30,12 @@ int is_finished(Board* game) {
 
 void set_value_command(Board* game, int row, int col, int value,
 		TurnsList* turns) {
-	int prev_val = game->current[row - 1][col - 1].value;
+	int prev_val;
 	MovesList* moves;
+	prev_val = game->current[row - 1][col - 1].value;
 	set_value(game, row, col, value);
 	moves = create_moves_list();
-	insert_move(moves, row - 1, col - 1, prev_val, value);
+	insert_move(moves, row, col, prev_val, value);
 	insert_turn(turns, moves);
 }
 
@@ -341,47 +342,41 @@ int auto_fill(Board* game, TurnsList* turns) {
 void undo(Board* game, TurnsList* turns) {
 	MoveNode* move;
 	int amount;
-
-	if (turns->top == turns->current) {
+	if (turns->pos == 0) {
 		/* error message */
 		return;
 	}
-
 	move = turns->current->prev->changes->top;
 	amount = turns->current->prev->changes->length;
-
 	while (amount > 0) {
 		set_value(game, move->row, move->col, move->prev_val);
-		printf("Cell <%d,%d> has been modified back to %d/n", move->row,
+		printf("Cell <%d,%d> has been modified back to %d\n", move->row,
 				move->col, move->prev_val);
 		move = move->next;
 		amount--;
 	}
-
 	turns->current = turns->current->prev;
+	turns->pos -= 1;
 }
 
 void redo(Board* game, TurnsList* turns) {
 	MoveNode* move;
 	int amount;
-
-	if (turns->top->prev == turns->current) {
+	if (turns->pos == turns->length) {
 		/* error message */
 		return;
 	}
-
 	move = turns->current->next->changes->top;
 	amount = turns->current->next->changes->length;
-
 	while (amount > 0) {
-		set_value(game, move->row, move->col, move->prev_val);
-		printf("Cell <%d,%d> has been modified back to %d/n", move->row,
-				move->col, move->prev_val);
+		set_value(game, move->row, move->col, move->new_val);
+		printf("Cell <%d,%d> has been modified back to %d\n", move->row,
+				move->col, move->new_val);
 		move = move->next;
 		amount--;
 	}
-
 	turns->current = turns->current->next;
+	turns->pos += 1;
 }
 
 void reset_board(Board* game, TurnsList* turns) {
@@ -426,8 +421,8 @@ int execute_command(Command* cmd) {
 			}
 		} else {
 			board = create_board(SIMPLE, SIMPLE);
-			turns_list = create_turns_list();
 		}
+		turns_list = create_turns_list();
 		current_game_mode = GAME_MODE_EDIT;
 		print_board(board);
 		return 1;
@@ -453,7 +448,7 @@ int execute_command(Command* cmd) {
 			printf("Error: third parameter out of range\n");
 			break;
 		}
-		set_value(board, x, y, z);
+		set_value_command(board, x, y, z, turns_list);
 		print_board(board);
 		return 1;
 
