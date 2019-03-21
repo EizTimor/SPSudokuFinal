@@ -40,9 +40,15 @@ void set_value_command(Board* game, int row, int col, int value,
 }
 
 int validate_board(Board* game) {
-	Board* copy = create_board_copy(game);
-	int valid = ilp(copy);
+	int valid;
+	Board* copy;
+	printf("Copying board...\n");
+	copy = create_board_copy(game);
+	printf("Copy created.\n");
+	valid = ilp(copy);
+	printf("Board validated, destroying copy...");
 	destroy_board(copy);
+	printf("Copy destroyed.\n");
 	return valid;
 }
 
@@ -448,15 +454,21 @@ int execute_command(Command* cmd) {
 			printf("Error: third parameter out of range\n");
 			break;
 		}
+		if (current_game_mode == GAME_MODE_SOLVE && board->current[x-1][y-1].isFixed){
+			printf("Cannot change fixed cells while in solve mode\n");
+			break;
+		}
 		set_value_command(board, x, y, z, turns_list);
 		print_board(board);
 		return 1;
 
 	case VALIDATE:
+		printf("Validation started...\n");
 		if (is_there_errors(board)) {
 			printf("Errors exist in board\n");
 			break;
 		}
+		printf("No errors in board, checking if solvable...\n");
 		if (validate_board(board)) {
 			printf("Board is solvable\n");
 		} else {

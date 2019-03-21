@@ -33,8 +33,13 @@ int main() {
 			printf("%s", COMMAND_TOO_LONG_ERROR);
 			continue;
 		}
+		printf("Input recieved: %s\n", in);
 		cmd = parse_command(in);
+		printf("Command parsed:\n");
+		print_command(cmd);
+		printf("\n");
 		is_game_live = execute_command(cmd);
+		printf("Command executed: is_game_live = %d\n", is_game_live);
 		destroy_command(cmd);
 	}
 	return 0;

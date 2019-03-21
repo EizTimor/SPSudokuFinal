@@ -25,10 +25,14 @@ Command* create_command(int id, int params[3], float float_param,
 	if (error_message) {
 		cmd->error_message = malloc((strlen(error_message) + 1) * sizeof(char));
 		strcpy(cmd->error_message, error_message);
+	} else {
+		cmd->error_message = NULL;
 	}
 	if (string_param) {
 		cmd->string_param = malloc((strlen(string_param) + 1) * sizeof(char));
 		strcpy(cmd->string_param, string_param);
+	} else {
+		cmd->string_param = NULL;
 	}
 	cmd->float_param = float_param;
 	for (i = 0; i < 3; i++) {
@@ -232,15 +236,16 @@ int fill_float_params(const char* command_name, int num_params,
 	return 1;
 }
 
-int fill_string_params(const char* command_name, int num_params, char* param,
-		int optional, char* error_message) {
+int fill_string_params(const char* command_name, int num_params, char** param,
+		int optional, char *error_message) {
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
-	printf("%s", param);
+	printf("Getting string parameter...\n");
 	while ((token = strtok(NULL, delim)) != NULL) {
 		if (i < num_params) {
-			param = token;
+			*param = token;
+			printf("String param: %s\n", *param);
 		} else {
 			sprintf(error_message,
 					"Error: too many parameters.\n'%s' command requires %d parameters.",
@@ -283,7 +288,7 @@ Command* parse_command(char *str) {
 	case EDIT:
 	case SAVE:
 		if (!fill_string_params(get_command_name(id), num_of_params(id),
-				string_param, is_params_optional(id), error_message)) {
+				&string_param, is_params_optional(id), error_message)) {
 			return create_command(INVALID_COMMAND, params, float_param,
 					string_param, error_message);
 		} else
@@ -301,7 +306,7 @@ Command* parse_command(char *str) {
 			return create_command(INVALID_COMMAND, params, float_param,
 					string_param, error_message);
 		} else
-			return create_command(id, params, float_param, string_param, NULL);
+			return create_command(id, params, float_param, NULL, NULL);
 	}
 }
 

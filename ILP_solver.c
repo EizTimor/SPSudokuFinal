@@ -208,6 +208,7 @@ int ilp(Board* game) {
 	char* vtype;
 	int optimstatus;
 	int status = 1;
+	printf("Starting ilp...\n");
 
 	ind = (int*) malloc(game->board_size * sizeof(int));
 	sol = (double*) malloc(

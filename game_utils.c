@@ -32,7 +32,8 @@ Board* load_board(char* path){
   Board* board;
   FILE* file = fopen(path, "r");
   if (file == NULL) {
-    return NULL;
+	  printf("Error opening file!\n");
+	  return NULL;
   }
   fscanf(file, "%d", &block_row);
   fscanf(file, "%d", &block_col);
@@ -40,7 +41,7 @@ Board* load_board(char* path){
   for (i = 0; i < board->board_size; i++){
     for (j = 0; j < board->board_size; j++){
       fscanf(file, "%d", &val);
-      set_value(board, block_row, block_col, val);
+      set_value(board, i + 1, j + 1, val);
       fscanf(file, "%c", &dot);
       is_fixed = dot == '.' ? 1 : 0;
       if (is_fixed) {
