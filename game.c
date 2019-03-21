@@ -306,7 +306,6 @@ void destroy_cell(Cell* cell) {
 		remove_option(cell, cell->options->top->value);
 	}
 	free(cell->options);
-	free(cell);
 }
 
 void destroy_board(Board* board) {
@@ -317,8 +316,9 @@ void destroy_board(Board* board) {
 		for (j = board->board_size - 1; j >= 0; j--) {
 			destroy_cell(&board->current[i][j]);
 		}
-		if (board->current[i])
+		if (board->current[i]) {
 			free(board->current[i]);
+		}
 	}
 	free(board->current);
 	free(board);

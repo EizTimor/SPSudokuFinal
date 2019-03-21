@@ -46,7 +46,7 @@ int validate_board(Board* game) {
 	copy = create_board_copy(game);
 	printf("Copy created.\n");
 	valid = ilp(copy);
-	printf("Board validated, destroying copy...");
+	printf("Board validated, destroying copy...\n");
 	destroy_board(copy);
 	printf("Copy destroyed.\n");
 	return valid;
@@ -252,6 +252,8 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			break;
 	}
 
+
+	print_board(copy);
 	if (i == MAX_ITERS) {
 		free(rows);
 		free(cols);
@@ -474,6 +476,7 @@ int execute_command(Command* cmd) {
 		} else {
 			printf("Board is not solvable\n");
 		}
+		print_board(board);
 		return 1;
 
 	case GUESS:

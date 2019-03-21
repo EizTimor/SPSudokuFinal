@@ -83,10 +83,11 @@ int ilp_add_variables(GRBenv **env, GRBmodel **model, char** vtype,
 int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		double** obj, int** ind) {
 	int i, j, k, e = 0;
-	int out_row, out_col, in_row, in_col, index;
+	int out_row, out_col, in_row, in_col, index = 0;
 	int c_ind[1];
 	double c_val[1] = { 1 };
 
+	printf("Adding cons. #1...\n");
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			for (k = 0; k < game->board_size; k++) {
@@ -103,6 +104,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #2...\n");
 	for (k = 0; k < game->board_size; k++) {
 		for (i = 0; i < game->board_size; i++) {
 			for (j = 0; j < game->board_size; j++) {
@@ -119,6 +121,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #3...\n");
 	for (k = 0; k < game->board_size; k++) {
 		for (j = 0; j < game->board_size; j++) {
 			for (i = 0; i < game->board_size; i++) {
@@ -135,6 +138,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #4...\n");
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			k = game->current[i][j].value;
@@ -152,6 +156,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #5...\n");
 	for (k = 0; k < game->board_size; k++) {
 		for (out_row = 0; out_row < game->block_row; out_row++) {
 			for (out_col = 0; out_col < game->block_col; out_col++) {
@@ -159,7 +164,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 						in_row < game->block_row + game->block_row * out_col;
 						in_row++) {
 					for (in_col = game->block_col * out_row;
-							in_col < game->block_col + game->block_col * in_row;
+							in_col < game->block_col + game->block_col * out_row;
 							in_col++) {
 						(*ind)[index] = in_col
 								* (game->board_size * game->board_size)
@@ -179,6 +184,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 			}
 		}
 	}
+	printf("Finished cons...\n");
 
 	return 1;
 }
@@ -218,17 +224,20 @@ int ilp(Board* game) {
 	vtype = (char*) malloc(
 			game->board_size * game->board_size * game->board_size
 					* sizeof(char));
-
 	if (ind == NULL || sol == NULL || obj == NULL || vtype == NULL) {
 		printf("Error: ilp malloc has failed\n");
 		return 0;
 	}
 
+	printf("Creating Env...\n");
 	status = create_environment(&env, &model);
+	printf("Adding Variables...\n");
 	status = status
 			&& ilp_add_variables(&env, &model, &vtype, game->board_size);
+	printf("Adding constraints...\n");
 	status = status && ilp_add_constraints(game, &env, &model, &obj, &ind);
 
+	printf("Optimizing...\n");
 	e = GRBoptimize(model);
 	if (e) {
 		printf("ERROR %d GRBoptimize(): %s\n", e, GRBgeterrormsg(env));
@@ -254,9 +263,11 @@ int ilp(Board* game) {
 	} else
 		status = 0;
 
+	printf("Copying sol to board...\n");
 	if (status)
 		ilp_solution_to_board(game, sol);
 
+	printf("Clearing Env...\n");
 	free_all(env, model, sol, ind, obj, vtype);
 
 	return status;
