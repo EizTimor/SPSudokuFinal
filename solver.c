@@ -185,9 +185,11 @@ int num_of_empty_cells(Board* game) {
 }
 
 int get_random_value(Cell* cell) {
-	int r = rand() % cell->options->length;
+	int r;
 	OptionNode* node = cell->options->top;
 
+	printf("Randomizing...\n");
+	r = rand() % cell->options->length;
 	for (; r >= 0; r--)
 		node = node->next;
 	return node->value;
@@ -221,10 +223,10 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			/* find and allocate values to x random cells */
 			rRow = rand() % game->board_size;
 			rCol = rand() % game->board_size;
-			if (game->current[rRow][rCol].value != DEFAULT) {
-				if (game->current[rRow][rCol].options->length != 0) {
+			if (game->current[rRow][rCol].value == DEFAULT) {
+				if (game->current[rRow][rCol].options->length == 0) {
 					for (k = 0; k < count; k++) {
-						set_value(game, rows[k], cols[k], DEFAULT);
+						set_value(game, rows[k] + 1, cols[k] + 1, DEFAULT);
 						rows[k] = 0;
 						cols[k] = 0;
 					}
@@ -233,14 +235,13 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 				}
 				rows[j] = rRow;
 				cols[j] = rCol;
-				set_value(game, rRow, rCol,
+				set_value(game, rRow + 1, rCol + 1,
 						get_random_value(&game->current[rRow][rCol]));
 			} else
 				j--;
 		}
 		if (!count)
 			continue;
-
 		if (!ilp(game)) {
 			for (k = 0; k < count; k++) {
 				set_value(game, rows[k], cols[k], DEFAULT);
@@ -251,7 +252,6 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 		} else
 			break;
 	}
-
 
 	print_board(copy);
 	if (i == MAX_ITERS) {

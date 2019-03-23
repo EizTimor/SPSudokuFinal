@@ -5,7 +5,6 @@
  *      Author: Timor Eizenman & Ido Lerer
  */
 
-
 #include "game.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,9 +21,24 @@ int mark_errors = 1;
 
 int insert_option(Cell* cell, int value) {
 	int index = 0;
-	OptionNode* last = cell->options->top->prev;
-	OptionNode* tmp = cell->options->top;
+	OptionNode* last;
+	OptionNode* tmp;
 
+	if (cell->options->length == 0) {
+		if ((tmp = (OptionNode *) malloc(sizeof(OptionNode))) == NULL) {
+			printf(MALLOC_ERROR);
+			exit(0);
+		}
+		cell->options->top = tmp;
+		cell->options->top->prev = tmp;
+		cell->options->top->next = tmp;
+		tmp->value = value;
+		cell->options->length += 1;
+		return 1;
+	}
+
+	last = cell->options->top->prev;
+	tmp = cell->options->top;
 	while (index < cell->options->length) {
 		if (tmp->value == value)
 			return 1;
@@ -54,7 +68,7 @@ int remove_option(Cell* cell, int value) {
 	while (curr->value != value) {
 		curr = curr->next;
 		if (count == cell->options->length) {
-			free(curr);
+			/*free(curr);*/
 			return 0;
 		}
 		count++;
@@ -88,10 +102,11 @@ void print_separator_row(int row_length) {
 void print_cell(Cell *cell) {
 	char extra_sign;
 	int val = cell->value;
-	if (cell->isFixed){
+	if (cell->isFixed) {
 		extra_sign = '.';
-	} else{
-		if (cell->isError && (current_game_mode == GAME_MODE_EDIT || mark_errors)){
+	} else {
+		if (cell->isError
+				&& (current_game_mode == GAME_MODE_EDIT || mark_errors)) {
 			extra_sign = '*';
 		} else {
 			extra_sign = ' ';
@@ -119,7 +134,8 @@ void print_row(Board *board, int index) {
 void print_board(Board* board) {
 	int index = 0, j;
 	int row_length = 4 * board->board_size + board->block_row + 1;
-	printf("N: %d, m: %d, row_length: %d\n", board->board_size, board->block_row, row_length);
+	printf("N: %d, m: %d, row_length: %d\n", board->board_size,
+			board->block_row, row_length);
 	print_separator_row(row_length);
 	while (index < board->board_size) {
 		for (j = 0; j < board->block_row; j++) {
@@ -203,11 +219,10 @@ void update_cell_options(Board* game, int row, int col) {
 
 		if (game->current[row][col].value != DEFAULT)
 			return;
-
-		for (; i < game->board_size; i++) {
-			if (is_value_valid(game, row, col, i))
-				insert_option(&game->current[row][col], i);
-		}
+	}
+	for (; i < game->board_size; i++) {
+		if (is_value_valid(game, row, col, i))
+			insert_option(&game->current[row][col], i);
 	}
 }
 
@@ -241,7 +256,7 @@ void set_value(Board* game, int row, int col, int value) {
 }
 
 Board* create_board(int rows, int cols) {
-	int i, j;
+	int i, j, k;
 	Board* board = (Board*) malloc(sizeof(Board));
 	Cell **current;
 	if (board == NULL) {
@@ -264,8 +279,12 @@ Board* create_board(int rows, int cols) {
 			printf(MALLOC_ERROR);
 			exit(0);
 		}
-		for (j = 0; j < board->board_size; j++)
+		for (j = 0; j < board->board_size; j++) {
 			create_cell(&current[i][j]);
+			for (k = 1; k <= board->board_size * board->board_size; k++) {
+				insert_option(&current[i][j], k);
+			}
+		}
 	}
 	return board;
 }
@@ -274,19 +293,15 @@ Board* create_board_copy(Board* game) {
 	Board* newGame = create_board(game->block_row, game->block_col);
 	int row, col;
 
-	for (row = 0; row < game->board_size; row++)
+	for (row = 0; row < game->board_size; row++) {
 		for (col = 0; col < game->board_size; col++) {
 			newGame->current[row][col].isError =
 					game->current[row][col].isError;
 			newGame->current[row][col].isFixed =
 					game->current[row][col].isFixed;
-			newGame->current[row][col].options = memcpy(
-					newGame->current[row][col].options,
-					game->current[row][col].options,
-					game->current[row][col].options->length
-							* sizeof(OptionNode));
-			newGame->current[row][col].value = game->current[row][col].value;
+			set_value(newGame, row + 1, col + 1, game->current[row][col].value);
 		}
+	}
 	return newGame;
 }
 
@@ -297,6 +312,7 @@ void create_cell(Cell* cell) {
 		printf(MALLOC_ERROR);
 		exit(0);
 	}
+	cell->options->length = 0;
 }
 
 void destroy_cell(Cell* cell) {
