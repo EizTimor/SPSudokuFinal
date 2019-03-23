@@ -354,7 +354,7 @@ void undo(Board* game, TurnsList* turns) {
 		/* error message */
 		return;
 	}
-	move = turns->current->prev->changes->top;
+	move = turns->current->changes->top;
 	amount = turns->current->prev->changes->length;
 	while (amount > 0) {
 		set_value(game, move->row, move->col, move->prev_val);
