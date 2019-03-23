@@ -112,7 +112,7 @@ int number_of_solutions(Board* game) {
 							&& stack->top->value == game->board_size) { /* pop until we find a cell to modify */
 						pop(stack, node);
 						set_value(game, stack->top->row, stack->top->column,
-								DEFAULT);
+						DEFAULT);
 					}
 					if (!is_empty(stack))
 						stack->top->value = stack->top->value + 1;
@@ -125,7 +125,7 @@ int number_of_solutions(Board* game) {
 				while (!is_empty(stack) && stack->top->value == game->board_size) { /* pop until we find a cell to modify */
 					pop(stack, node);
 					set_value(game, stack->top->row, stack->top->column,
-							DEFAULT);
+					DEFAULT);
 				}
 				if (!is_empty(stack))
 					stack->top->value = stack->top->value + 1;
@@ -354,7 +354,7 @@ void undo(Board* game, TurnsList* turns) {
 		/* error message */
 		return;
 	}
-	move = turns->current->prev->changes->top;
+	move = turns->current->changes->top;
 	amount = turns->current->prev->changes->length;
 	while (amount > 0) {
 		set_value(game, move->row, move->col, move->prev_val);
@@ -400,16 +400,18 @@ int execute_command(Command* cmd) {
 	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
 	float float_param = cmd->float_param;
 	char* path = cmd->string_param;
-/*
- * 	printf("command recieved, info:\n");
- *	print_command(cmd);
- */
+	/*
+	 * 	printf("command recieved, info:\n");
+	 *	print_command(cmd);
+	 */
 	switch (cmd->id) {
 	case INVALID_COMMAND:
 		printf("%s\n", cmd->error_message);
 		return 1;
 
 	case SOLVE:
+		destroy_board(board);
+		destroy_turns_list(turns_list);
 		board = load_board(path);
 		if (!board) {
 			printf(FOPEN_ERROR);
@@ -421,6 +423,8 @@ int execute_command(Command* cmd) {
 		break;
 
 	case EDIT:
+		destroy_board(board);
+		destroy_turns_list(turns_list);
 		if (path) {
 			board = load_board(path);
 			if (!board) {
@@ -456,7 +460,8 @@ int execute_command(Command* cmd) {
 			printf("Error: third parameter out of range\n");
 			break;
 		}
-		if (current_game_mode == GAME_MODE_SOLVE && board->current[x-1][y-1].isFixed){
+		if (current_game_mode == GAME_MODE_SOLVE
+				&& board->current[x - 1][y - 1].isFixed) {
 			printf("Cannot change fixed cells while in solve mode\n");
 			break;
 		}

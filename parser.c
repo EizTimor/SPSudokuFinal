@@ -270,6 +270,8 @@ Command* parse_command(char *str) {
 	float float_param = 0;
 	const char* command_name;
 	const char* command_modes;
+	if (!token)
+		return NULL;
 	id = get_command_id(token);
 	if (id == -1) {
 		return create_command(INVALID_COMMAND, params, float_param,

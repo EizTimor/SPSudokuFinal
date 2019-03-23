@@ -35,6 +35,8 @@ int main() {
 		}
 		printf("Input recieved: %s\n", in);
 		cmd = parse_command(in);
+		if (!cmd)
+			continue;
 		printf("Command parsed:\n");
 		print_command(cmd);
 		printf("\n");
