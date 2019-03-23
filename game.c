@@ -233,9 +233,12 @@ void update_options_after_set(Board* game, int row, int col) {
 
 void set_value(Board* game, int row, int col, int value) {
 	int prev_val = game->current[row - 1][col - 1].value;
+	printf("prev: %d\n", prev_val);
 	if (value != prev_val) {
 		game->current[row - 1][col - 1].value = value;
+		fprintf(stderr, "checking for errors...\n");
 		check_specific_error(game, row - 1, col - 1);
+		fprintf(stderr, "updating options...\n");
 		update_options_after_set(game, row - 1, col - 1);
 	}
 }
@@ -310,6 +313,7 @@ void destroy_cell(Cell* cell) {
 
 void destroy_board(Board* board) {
 	int i, j;
+	printf("Destroying board...\n");
 	if (!board)
 		return;
 	for (i = board->board_size - 1; i >= 0; i--) {
@@ -322,4 +326,5 @@ void destroy_board(Board* board) {
 	}
 	free(board->current);
 	free(board);
+	printf("Board destroyed.\n");
 }

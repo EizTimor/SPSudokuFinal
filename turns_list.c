@@ -53,7 +53,7 @@ void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) 
 void destroy_moves_list(MovesList* moves) {
 	MoveNode* node;
 
-	while (!moves->length) {
+	while (moves->length) {
 		node = moves->top->next;
 		free(moves->top);
 		moves->top = node;
@@ -121,10 +121,11 @@ void clean_from_current(TurnsList* turns) {
 
 void destroy_turns_list(TurnsList* turns) {
 	TurnNode* node;
+	printf("Destroying turnsList...\n");
 	if (!turns)
 		return;
 
-	while (!turns->length) {
+	while (turns->length) {
 		node = turns->top->next;
 		destroy_moves_list(turns->top->changes);
 		free(turns->top);
@@ -133,4 +134,5 @@ void destroy_turns_list(TurnsList* turns) {
 	}
 
 	free(turns);
+	printf("turnsList destroyed.\n");
 }
