@@ -202,7 +202,7 @@ void check_specific_error(Board* game, int row, int col) {
 		for (j = cols_to_add; j < cols_to_add + game->block_col; j++) {
 			value = game->current[i][j].value;
 			game->current[i][j].value = DEFAULT;
-			if (value == DEFAULT || is_value_valid(game, i, col, value))
+			if (value == DEFAULT || is_value_valid(game, i, j, value))
 				game->current[i][j].isError = 0;
 			else
 				game->current[i][j].isError = 1;

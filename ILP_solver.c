@@ -158,17 +158,17 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 
 	printf("Adding cons. #5...\n");
 	for (k = 0; k < game->board_size; k++) {
-		for (out_row = 0; out_row < game->block_row; out_row++) {
-			for (out_col = 0; out_col < game->block_col; out_col++) {
-				for (in_row = game->block_row * out_col;
-						in_row < game->block_row + game->block_row * out_col;
-						in_row++) {
-					for (in_col = game->block_col * out_row;
-							in_col < game->block_col + game->block_col * out_row;
-							in_col++) {
-						(*ind)[index] = in_col
+		for (out_col = 0; out_col < game->block_col; out_col++) {
+			for (out_row = 0; out_row < game->block_row; out_row++) {
+				for (in_col = game->block_col * out_col;
+						in_col < game->block_col + game->block_col * out_col;
+						in_col++) {
+					for (in_row = game->block_row * out_row;
+							in_row < game->block_row + game->block_row * out_row;
+							in_row++) {
+						(*ind)[index] = in_row
 								* (game->board_size * game->board_size)
-								+ (in_row * game->board_size) + k;
+								+ (in_col * game->board_size) + k;
 						(*obj)[index] = 1;
 						index++;
 					}
@@ -270,6 +270,8 @@ int ilp(Board* game) {
 	printf("Clearing Env...\n");
 	free_all(env, model, sol, ind, obj, vtype);
 
+	printf("Printing ILP\n");
+	print_board(game);
 	return status;
 }
 

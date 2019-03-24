@@ -197,7 +197,7 @@ int get_random_value(Cell* cell) {
 
 int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	int rRow, rCol;
-	int i = 0, j, count, k;
+	int i = 0, j, count = 0, k;
 	int* rows, *cols;
 	MovesList* moves;
 	Board* copy;
@@ -237,6 +237,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 				cols[j] = rCol;
 				set_value(game, rRow + 1, rCol + 1,
 						get_random_value(&game->current[rRow][rCol]));
+				count += 1;
 			} else
 				j--;
 		}
@@ -244,7 +245,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			continue;
 		if (!ilp(game)) {
 			for (k = 0; k < count; k++) {
-				set_value(game, rows[k], cols[k], DEFAULT);
+				set_value(game, rows[k] + 1, cols[k] + 1, DEFAULT);
 				rows[k] = 0;
 				cols[k] = 0;
 			}
@@ -253,7 +254,6 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			break;
 	}
 
-	print_board(copy);
 	if (i == MAX_ITERS) {
 		free(rows);
 		free(cols);
@@ -262,22 +262,26 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 		return 0;
 	}
 
+	printf("Printing Copy...\n");
+	print_board(game);
 	moves = create_moves_list();
 	/* clear all but y cells */
+	for (k = 0; k < count; k++)
+		insert_move(moves, rows[k] + 1, cols[k] + 1, DEFAULT,
+				game->current[rows[k]][cols[k]].value);
+
 	for (i = 0; i < game->board_size * game->board_size - y; i++) {
 		rRow = rand() % game->board_size;
 		rCol = rand() % game->board_size;
 		if (game->current[rRow][rCol].value == DEFAULT)
 			i--;
-		game->current[rRow][rCol].value = DEFAULT;
-		if (copy->current[rRow][rCol].value != DEFAULT)
-			insert_move(moves, rRow, rCol, copy->current[rRow][rCol].value,
-			DEFAULT);
+		else {
+			game->current[rRow][rCol].value = DEFAULT;
+			if (copy->current[rRow][rCol].value != DEFAULT)
+				insert_move(moves, rRow + 1, rCol + 1, copy->current[rRow][rCol].value,
+				DEFAULT);
+		}
 	}
-
-	for (k = 0; k < count; k++)
-		insert_move(moves, rows[k], cols[k], DEFAULT,
-				game->current[rows[k]][cols[k]].value);
 
 	insert_turn(turns, moves);
 
@@ -540,11 +544,11 @@ int execute_command(Command* cmd) {
 		return 1;
 
 	case HINT:
-		get_hint(board, x, y, 1);
+		printf("%d\n", get_hint(board, x - 1, y - 1, 1));
 		return 1;
 
 	case GUESS_HINT:
-		get_hint(board, x, y, 0);
+		printf("%d\n", get_hint(board, x - 1, y - 1, 0));
 		return 1;
 
 	case NUM_SOLUTIONS:
