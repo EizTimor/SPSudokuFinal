@@ -31,8 +31,8 @@ void push(Stack* stack, int row, int col, int val) {
         exit(0);
     }
 
-    node->column = row;
-    node->row = col;
+    node->column = col;
+    node->row = row;
     node->value = val;
     node->prev = stack->top;
 

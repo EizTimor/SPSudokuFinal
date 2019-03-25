@@ -213,6 +213,7 @@ int ilp(Board* game) {
 	double* obj;
 	char* vtype;
 	int optimstatus;
+	double objval;
 	int status = 1;
 	printf("Starting ilp...\n");
 
@@ -250,6 +251,12 @@ int ilp(Board* game) {
 			printf("ERROR %d GRBgetintattr(): %s\n", e, GRBgeterrormsg(env));
 			status = 0;
 		}
+		e = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
+		if (e) {
+			printf("ERROR %d GRBgetdoubleattr(): %s\n", e, GRBgeterrormsg(env));
+			status = 0;
+		}
+		printf("Objval is %f\n", objval);
 	}
 
 	if (optimstatus == GRB_OPTIMAL) {
@@ -295,7 +302,7 @@ int lp_add_variables(GRBenv **env, GRBmodel **model, char** vtype,
 		return 0;
 	}
 
-	e = GRBsetdblattr(*model, GRB_DBL_ATTR_OBJCON, GRB_MAXIMIZE);
+	e = GRBsetintattr(*model, GRB_INT_ATTR_MODELSENSE, GRB_MAXIMIZE);
 	if (e) {
 		printf("ERROR %d GRBsetdblattr(): %s\n", e, GRBgeterrormsg(*env));
 		return 0;
@@ -313,10 +320,11 @@ int lp_add_variables(GRBenv **env, GRBmodel **model, char** vtype,
 int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		double** obj, int** ind) {
 	int i, j, k, e = 0;
-	int out_row, out_col, in_row, in_col, index;
+	int out_row, out_col, in_row, in_col, index = 0;
 	int c_ind[1];
 	double c_val[1] = { 1.0 };
 
+	printf("Adding cons. #1...\n");
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			for (k = 0; k < game->board_size; k++) {
@@ -325,7 +333,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[k] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_LESS_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, NULL);
 			if (e) {
 				printf("ERROR %d constraint #1: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -333,6 +341,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #2...\n");
 	for (k = 0; k < game->board_size; k++) {
 		for (i = 0; i < game->board_size; i++) {
 			for (j = 0; j < game->board_size; j++) {
@@ -341,7 +350,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[j] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_LESS_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, NULL);
 			if (e) {
 				printf("ERROR %d constraint #2: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -349,6 +358,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #3...\n");
 	for (k = 0; k < game->board_size; k++) {
 		for (j = 0; j < game->board_size; j++) {
 			for (i = 0; i < game->board_size; i++) {
@@ -357,7 +367,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[i] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_LESS_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, NULL);
 			if (e) {
 				printf("ERROR %d constraint #3: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -365,6 +375,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #4...\n");
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			k = game->current[i][j].value;
@@ -372,7 +383,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				c_ind[0] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k - 1;
 				e = GRBaddconstr(*model, 1, c_ind, c_val,
-				GRB_LESS_EQUAL, 1.0, NULL);
+				GRB_EQUAL, 1.0, NULL);
 				if (e) {
 					printf("ERROR %d constraint #4: %s\n", e,
 							GRBgeterrormsg(*env));
@@ -382,24 +393,25 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Adding cons. #5...\n");
 	for (k = 0; k < game->board_size; k++) {
-		for (out_row = 0; out_row < game->block_row; out_row++) {
-			for (out_col = 0; out_col < game->block_col; out_col++) {
-				for (in_row = game->block_row * out_col;
-						in_row < game->block_row + game->block_row * out_col;
-						in_row++) {
-					for (in_col = game->block_col * out_row;
-							in_col < game->block_col + game->block_col * in_row;
-							in_col++) {
-						(*ind)[index] = in_col
+		for (out_col = 0; out_col < game->block_col; out_col++) {
+			for (out_row = 0; out_row < game->block_row; out_row++) {
+				for (in_col = game->block_col * out_col;
+						in_col < game->block_col + game->block_col * out_col;
+						in_col++) {
+					for (in_row = game->block_row * out_row;
+							in_row < game->block_row + game->block_row * out_row;
+							in_row++) {
+						(*ind)[index] = in_row
 								* (game->board_size * game->board_size)
-								+ (in_row * game->board_size) + k;
+								+ (in_col * game->board_size) + k;
 						(*obj)[index] = 1;
 						index++;
 					}
 				}
 				e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-				GRB_LESS_EQUAL, 1.0, NULL);
+				GRB_EQUAL, 1.0, NULL);
 				if (e) {
 					printf("ERROR %d constraint #5: %s\n", e,
 							GRBgeterrormsg(*env));
@@ -410,6 +422,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 		}
 	}
 
+	printf("Finished cons...\n");
 	return 1;
 }
 
@@ -419,20 +432,23 @@ void lp_solution_to_board(Board* game, double* sol) {
 
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
-			sum = 0;
-			for (k = 0; k < game->board_size; k++) {
-				sum += sol[i * (game->board_size * game->board_size)
-						+ (j * game->board_size) + k];
-			}
-			r = (double) rand() / (double) RAND_MAX * sum;
+			r = (double) rand() / (double) RAND_MAX;
+			printf("r is %f\n", r);
+			sum = 1;
 			for (k = game->board_size - 1; k >= 0; k--) {
+				printf("%f ",
+						sol[i * (game->board_size * game->board_size)
+								+ (j * game->board_size) + k]);
 				if (sum
 						- sol[i * (game->board_size * game->board_size)
-								+ (j * game->board_size) + k] <= r && r < sum) {
+								+ (j * game->board_size) + k] <= r) {
 					game->current[i][j].value = k + 1;
 					break;
 				}
+				sum -= sol[i * (game->board_size * game->board_size)
+						+ (j * game->board_size) + k];
 			}
+			printf("\n");
 		}
 	}
 }
@@ -445,8 +461,10 @@ int lp(Board* game) {
 	int* ind;
 	double* obj;
 	char* vtype;
-	double optimstatus;
+	int optimstatus;
+	double objval;
 	int status = 1;
+	printf("Statring lp...\n");
 
 	ind = (int*) malloc(game->board_size * sizeof(int));
 	sol = (double*) malloc(
@@ -462,10 +480,14 @@ int lp(Board* game) {
 		return 0;
 	}
 
+	printf("Creating Env...\n");
 	status = create_environment(&env, &model);
+	printf("Adding Variables...\n");
 	status = status && lp_add_variables(&env, &model, &vtype, game->board_size);
+	printf("Adding constraints...\n");
 	status = status && lp_add_constraints(game, &env, &model, &obj, &ind);
 
+	printf("Optimizing...\n");
 	e = GRBoptimize(model);
 	if (e) {
 		printf("ERROR %d GRBoptimize(): %s\n", e, GRBgeterrormsg(env));
@@ -473,11 +495,17 @@ int lp(Board* game) {
 	}
 
 	if (status) {
-		e = GRBgetdblattr(model, GRB_INT_ATTR_NUMVARS, &optimstatus);
+		e = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
 		if (e) {
 			printf("ERROR %d GRBgetintattr(): %s\n", e, GRBgeterrormsg(env));
 			status = 0;
 		}
+		e = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
+		if (e) {
+			printf("ERROR %d GRBgetdoubleattr(): %s\n", e, GRBgeterrormsg(env));
+			status = 0;
+		}
+		printf("Objval is %f\n", objval);
 	}
 
 	if (optimstatus == GRB_OPTIMAL) {
@@ -488,13 +516,19 @@ int lp(Board* game) {
 					GRBgeterrormsg(env));
 			status = 0;
 		}
-	} else
+	} else {
 		status = 0;
+	}
 
+	printf("Copying sol to board...%d\n", status);
 	if (status)
 		lp_solution_to_board(game, sol);
 
+	printf("Clearing Env...\n");
 	free_all(env, model, sol, ind, obj, vtype);
+
+	printf("Printing LP\n");
+	print_board(game);
 
 	return status;
 }

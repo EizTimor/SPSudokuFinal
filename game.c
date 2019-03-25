@@ -151,10 +151,12 @@ int is_value_valid(Board* game, int row, int col, int value) {
 	int rows_to_add = 0, cols_to_add = 0;
 
 	for (; i < game->board_size; i++) {
-		if (game->current[row][i].value == value)
+		if (game->current[row][i].value == value) {
 			return 0;
-		if (game->current[i][col].value == value)
+		}
+		if (game->current[i][col].value == value) {
 			return 0;
+		}
 	}
 
 	rows_to_add = (row / game->block_row) * game->block_row;
@@ -162,8 +164,9 @@ int is_value_valid(Board* game, int row, int col, int value) {
 
 	for (i = rows_to_add; i < rows_to_add + game->block_row; i++)
 		for (j = cols_to_add; j < cols_to_add + game->block_col; j++)
-			if (game->current[i][j].value == value)
+			if (game->current[i][j].value == value) {
 				return 0;
+			}
 
 	return 1;
 }
@@ -211,7 +214,7 @@ void check_specific_error(Board* game, int row, int col) {
 }
 
 void update_cell_options(Board* game, int row, int col) {
-	int i = 0;
+	int i = 1;
 
 	while (game->current[row][col].options->length > 0) {
 		remove_option(&game->current[row][col],
@@ -220,7 +223,7 @@ void update_cell_options(Board* game, int row, int col) {
 		if (game->current[row][col].value != DEFAULT)
 			return;
 	}
-	for (; i < game->board_size; i++) {
+	for (; i <= game->board_size; i++) {
 		if (is_value_valid(game, row, col, i))
 			insert_option(&game->current[row][col], i);
 	}
@@ -248,7 +251,6 @@ void update_options_after_set(Board* game, int row, int col) {
 
 void set_value(Board* game, int row, int col, int value) {
 	int prev_val = game->current[row - 1][col - 1].value;
-	printf("prev: %d\n", prev_val);
 	if (value != prev_val) {
 		game->current[row - 1][col - 1].value = value;
 		fprintf(stderr, "checking for errors...\n");
@@ -284,7 +286,7 @@ Board* create_board(int rows, int cols) {
 		}
 		for (j = 0; j < board->board_size; j++) {
 			create_cell(&current[i][j]);
-			for (k = 1; k <= board->board_size * board->board_size; k++) {
+			for (k = 1; k <= board->board_size; k++) {
 				insert_option(&current[i][j], k);
 			}
 		}
