@@ -10,6 +10,8 @@
 #include <string.h>
 #include "ILP_solver.h"
 
+#define DEFAULT 0
+
 int create_environment(GRBenv **env, GRBmodel **model) {
 	int e = 0;
 
@@ -142,7 +144,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			k = game->current[i][j].value;
-			if (k != 0) {
+			if (k != DEFAULT) {
 				c_ind[0] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k - 1;
 				e = GRBaddconstr(*model, 1, c_ind, c_val,
@@ -379,7 +381,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			k = game->current[i][j].value;
-			if (k != 0) {
+			if (k != DEFAULT) {
 				c_ind[0] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k - 1;
 				e = GRBaddconstr(*model, 1, c_ind, c_val,
@@ -427,27 +429,38 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 }
 
 void lp_solution_to_board(Board* game, double* sol) {
-	int i, j, k, sum;
+	int i, j, k;
 	double r;
+	double low, high;
+
+	for (i = 0; i < game->board_size; i++) {
+		for (j = 0; j < game->board_size; j++) {
+			for (k = 1; k < game->board_size; k++) {
+				sol[i * (game->board_size * game->board_size)
+						+ (j * game->board_size) + k] += sol[i
+						* (game->board_size * game->board_size)
+						+ (j * game->board_size) + k - 1];
+			}
+		}
+	}
 
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			r = (double) rand() / (double) RAND_MAX;
 			printf("r is %f\n", r);
-			sum = 1;
+			high = 1;
 			for (k = game->board_size - 1; k >= 0; k--) {
-				printf("%f ",
-						sol[i * (game->board_size * game->board_size)
-								+ (j * game->board_size) + k]);
-				if (sum
-						- sol[i * (game->board_size * game->board_size)
-								+ (j * game->board_size) + k] <= r) {
-					game->current[i][j].value = k + 1;
+				low = sol[i * (game->board_size * game->board_size)
+						+ (j * game->board_size) + k];
+				printf("%f %f - ", low, high);
+				if (low <= r && r <= high) {
+					game->current[i][j].value = k + 2;
 					break;
 				}
-				sum -= sol[i * (game->board_size * game->board_size)
-						+ (j * game->board_size) + k];
+				high = low;
 			}
+			if (game->current[i][j].value == DEFAULT)
+				game->current[i][j].value = 1;
 			printf("\n");
 		}
 	}
