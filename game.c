@@ -102,7 +102,7 @@ void print_separator_row(int row_length) {
 void print_cell(Cell *cell) {
 	char extra_sign;
 	int val = cell->value;
-	if (cell->isFixed) {
+	if (cell->isFixed && current_game_mode != GAME_MODE_EDIT) {
 		extra_sign = '.';
 	} else {
 		if (cell->isError
