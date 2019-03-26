@@ -312,6 +312,7 @@ Board* create_board_copy(Board* game) {
 
 void create_cell(Cell* cell) {
 	cell->isFixed = 0;
+	cell->isError = 0;
 	cell->value = DEFAULT;
 	if ((cell->options = (OptionsList *) malloc(sizeof(OptionsList))) == NULL) {
 		printf(MALLOC_ERROR);
