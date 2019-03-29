@@ -1,8 +1,7 @@
 /*
  * main.c
  *
- *  Created on: Dec 18, 2018
- *      Author: Timor Eizenman & Ido Lerer
+ *Author: Timor Eizenman & Ido Lerer
  */
 
 #include <stdio.h>
@@ -33,7 +32,6 @@ int main() {
 			printf("%s", COMMAND_TOO_LONG_ERROR);
 			continue;
 		}
-		printf("Input recieved: %s\n", in);
 		cmd = parse_command(in);
 		if (!cmd)
 			continue;
@@ -41,7 +39,6 @@ int main() {
 		print_command(cmd);
 		printf("\n");
 		is_game_live = execute_command(cmd);
-		printf("Command executed: is_game_live = %d\n", is_game_live);
 		destroy_command(cmd);
 	}
 	return 0;

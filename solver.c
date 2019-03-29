@@ -407,10 +407,6 @@ int execute_command(Command* cmd) {
 	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
 	float float_param = cmd->float_param;
 	char* path = cmd->string_param;
-	/*
-	 * 	printf("command recieved, info:\n");
-	 *	print_command(cmd);
-	 */
 	switch (cmd->id) {
 	case INVALID_COMMAND:
 		printf("%s\n", cmd->error_message);

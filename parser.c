@@ -53,7 +53,7 @@ void destroy_command(Command* cmd) {
 }
 
 /*
- * a function used to get the command name from its id.
+ * Used to get the command name from its id.
  */
 const char* get_command_name(int id) {
 	static char* names[] = { "invalid_command", "solve", "edit", "mark_errors",
@@ -68,7 +68,7 @@ const char* get_command_name(int id) {
 }
 
 /*
- * a function used to get the command id from its name.
+ * Used to get the command id from its name.
  */
 int get_command_id(char *type) {
 	int id;
@@ -82,7 +82,7 @@ int get_command_id(char *type) {
 }
 
 /*
- * returns the number of parameters the command expectects.
+ * Returns the number of parameters the command expects.
  */
 int num_of_params(enum command_id id) {
 	switch (id) {
@@ -113,7 +113,7 @@ int num_of_params(enum command_id id) {
 }
 
 /*
- * returns a string containing the modes in which the command is available.
+ * Returns a string containing the modes in which the command is available.
  */
 const char* get_command_modes(enum command_id id) {
 	static char* modes[] =
@@ -147,7 +147,7 @@ const char* get_command_modes(enum command_id id) {
 }
 
 /*
- * returns true iff command is available in current game mode.
+ * Returns true iff command is available in current game mode.
  */
 int is_command_available(enum command_id id) {
 	switch (id) {
@@ -180,12 +180,19 @@ int is_command_available(enum command_id id) {
 }
 
 /*
- * returns true iff the parameters of the command are optional.
+ * Returns true iff the parameters of the command are optional.
  */
 int is_params_optional(enum command_id id) {
 	return id == EDIT;
 }
 
+/*
+ * The function receives an array and fills it with the required parameters for the command_name.
+ * The function assumes strtok was already called to fetch the command name and can be
+ * called again with Null pointer to continue analyzing the received string input.
+ * Returns 1 on success and 0 if an error occurred (in which case the error_message
+ * will contain the error description).
+ */
 int fill_int_params(const char* command_name, int num_params, int params[3],
 		int optional, char* error_message) {
 	const char delim[] = " \t\r\n";
@@ -211,6 +218,14 @@ int fill_int_params(const char* command_name, int num_params, int params[3],
 	return 1;
 }
 
+/*
+ * The function receives a float pointer and fills it with the required parameter
+ * for the command_name.
+ * The function assumes "strtok" was already called to fetch the command name and can be
+ * called again with Null pointer to continue analyzing the received string input.
+ * Returns 1 on success and 0 if an error occurred (in which case the error_message
+ * will contain the error description).
+ */
 int fill_float_params(const char* command_name, int num_params,
 		float* float_param, int optional, char* error_message) {
 	const char delim[] = " \t\r\n";
@@ -236,6 +251,14 @@ int fill_float_params(const char* command_name, int num_params,
 	return 1;
 }
 
+/*
+ * The function receives a string pointer and fills it with the required parameter
+ * for the command_name.
+ * The function assumes "strtok" was already called to fetch the command name and can be
+ * called again with Null pointer to continue analyzing the received string input.
+ * Returns 1 on success and 0 if an error occurred (in which case the error_message
+ * will contain the error description).
+ */
 int fill_string_params(const char* command_name, int num_params, char** param,
 		int optional, char *error_message) {
 	const char delim[] = " \t\r\n";
@@ -263,6 +286,13 @@ int fill_string_params(const char* command_name, int num_params, char** param,
 	return 1;
 }
 
+/*
+ * The function containing the parsing logic, used to convert a string with the user's input
+ * to a Command structure. If an error has occurred during the parsing, a command
+ * of type INVALID will be returned with the error description. Else, the command object
+ * representing the user's command with all parameters filled will be returned.
+ *
+ */
 Command* parse_command(char *str) {
 	const char delim[] = " \t\r\n";
 	int params[3] = { 0 }, id;
@@ -312,6 +342,9 @@ Command* parse_command(char *str) {
 	}
 }
 
+/*
+ *A function used to print a command structure, useful for debugging.
+ */
 void print_command(Command* cmd) {
 	int id, i = 0, num_params;
 	if (!cmd)

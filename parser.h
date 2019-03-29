@@ -10,7 +10,10 @@
 #include "game.h"
 
 /*
- * a unique ID for each command, the parser returns the ID corresponding to the parsed command.
+ * Enum: command_id
+ * ------------------
+ * A unique ID for each command. The parser returns a Command structure containing a command_id
+ * field to identify the command type.
  */
 enum command_id {
 	INVALID_COMMAND, SOLVE, EDIT, MARK_ERORRS, PRINT_BOARD, SET, VALIDATE,
@@ -21,16 +24,16 @@ enum command_id {
 /*
  * Structure: Command
  * ------------------
- * 	A structure used to represent a command
+ * 	A structure used to represent a command.
  *
- * 	id : an integer representing the command type. List of all command types:
- * 			SET: 0, HINT: 1, VALIDATE: 2, RESTART: 3, EXIT: 4
+ * 	id : an integer representing the command type. List of all command types
+ * 	     	appear in @command_id.
  * 	params[]: an integer array storing command parameters.
  * 			For commands with less than 3 parameters excess integers are 0.
  * 	float_parm: a float variable for commands containing a float parameter.
  * 	string_parm: a char* variable for commands containing a string parameter.
  * 	error_message: if an error occurred during the parsing of the command, this variable
- * 					will contain the error description.
+ * 			will contain the error description.
  */
 typedef struct command_t{
 	int id;
@@ -43,7 +46,7 @@ typedef struct command_t{
 /*
  * Function: parse_command
  * ----------------------
- * 	Receives a string and returns a command variable with the interpreted command.
+ * 	Receives a string and returns a Command structure pointer with the interpreted command.
  *
  * 	str[] : a character array with the string to be interpreted.
  *
