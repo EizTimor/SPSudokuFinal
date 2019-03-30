@@ -1,8 +1,7 @@
 /*
  * solver.c
  *
- *  Created on: Dec 18, 2018
- *      Author: Timor Eizenman & Ido Lerer
+ * Author: Timor Eizenman & Ido Lerer
  */
 
 #include <stdio.h>
@@ -42,13 +41,9 @@ void set_value_command(Board* game, int row, int col, int value,
 int validate_board(Board* game) {
 	int valid;
 	Board* copy;
-	printf("Copying board...\n");
 	copy = create_board_copy(game);
-	printf("Copy created.\n");
 	valid = ilp(copy);
-	printf("Board validated, destroying copy...\n");
 	destroy_board(copy);
-	printf("Copy destroyed.\n");
 	return valid;
 }
 

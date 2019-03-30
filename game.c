@@ -253,9 +253,7 @@ void set_value(Board* game, int row, int col, int value) {
 	int prev_val = game->current[row - 1][col - 1].value;
 	if (value != prev_val) {
 		game->current[row - 1][col - 1].value = value;
-		fprintf(stderr, "checking for errors...\n");
 		check_specific_error(game, row - 1, col - 1);
-		fprintf(stderr, "updating options...\n");
 		update_options_after_set(game, row - 1, col - 1);
 	}
 }

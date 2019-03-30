@@ -35,9 +35,6 @@ int main() {
 		cmd = parse_command(in);
 		if (!cmd)
 			continue;
-		printf("Command parsed:\n");
-		print_command(cmd);
-		printf("\n");
 		is_game_live = execute_command(cmd);
 		destroy_command(cmd);
 	}

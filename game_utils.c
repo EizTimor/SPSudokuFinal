@@ -6,7 +6,6 @@ int save_board(Board* board, const char* path, int all_fixed) {
 	char *fixed, *space;
 	int i, j, val;
 	FILE* file = fopen(path, "w");
-	/* TODO: better error handling */
 	if (file == NULL || board == NULL) {
 		printf("Error opening file!\n");
 		return 0;
@@ -36,11 +35,9 @@ Board* load_board(char* path) {
 		printf("Error opening file!\n");
 		return NULL;
 	}
-	printf("FILE OPENED\n");
 	fscanf(file, "%d", &block_row);
 	fscanf(file, "%d", &block_col);
 	board = create_board(block_row, block_col);
-	printf("BOARD CREATED\n");
 	for (i = 0; i < board->board_size; i++) {
 		for (j = 0; j < board->board_size; j++) {
 			fscanf(file, "%d", &val);

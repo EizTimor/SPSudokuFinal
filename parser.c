@@ -1,7 +1,6 @@
 /*
  * parser.h
  *
- *  Created on: 20 Dec 2018
  *      Authors: Ido Lerer, Timor Eizenman
  */
 #include <string.h>
