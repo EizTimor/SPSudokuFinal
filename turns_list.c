@@ -121,7 +121,6 @@ void clean_from_current(TurnsList* turns) {
 
 void destroy_turns_list(TurnsList* turns) {
 	TurnNode* node;
-	printf("Destroying turnsList...\n");
 	if (!turns)
 		return;
 
@@ -134,5 +133,4 @@ void destroy_turns_list(TurnsList* turns) {
 	}
 
 	free(turns);
-	printf("turnsList destroyed.\n");
 }

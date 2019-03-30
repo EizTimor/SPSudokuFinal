@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include "game_utils.h"
 
+#define FOPEN_ERROR "Error: could not open file.\n"
+
 int save_board(Board* board, const char* path, int all_fixed) {
 	char *fixed, *space;
 	int i, j, val;
 	FILE* file = fopen(path, "w");
 	if (file == NULL || board == NULL) {
-		printf("Error opening file!\n");
+		printf(FOPEN_ERROR);
 		return 0;
 	}
 	fprintf(file, "%d %d\n", board->block_row, board->block_col);
@@ -32,7 +34,7 @@ Board* load_board(char* path) {
 	Board* board;
 	FILE* file = fopen(path, "r");
 	if (file == NULL) {
-		printf("Error opening file!\n");
+		printf(FOPEN_ERROR);
 		return NULL;
 	}
 	fscanf(file, "%d", &block_row);

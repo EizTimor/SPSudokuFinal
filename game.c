@@ -12,9 +12,8 @@
 
 #define DEFAULT 0
 #define SIMPLE 3
-#define MALLOC_ERROR "Error: malloc has failed\n"
-#define FOPEN_ERROR "Error: could not open file\n"
-#define FGETS_ERROR "Error: fgets has failed\n"
+#define MALLOC_ERROR "Error: malloc has failed.\n"
+#define FGETS_ERROR "Error: fgets has failed.\n"
 
 game_mode current_game_mode = GAME_MODE_INIT;
 int mark_errors = 1;
@@ -330,7 +329,6 @@ void destroy_cell(Cell* cell) {
 
 void destroy_board(Board* board) {
 	int i, j;
-	printf("Destroying board...\n");
 	if (!board)
 		return;
 	for (i = board->board_size - 1; i >= 0; i--) {
@@ -343,5 +341,4 @@ void destroy_board(Board* board) {
 	}
 	free(board->current);
 	free(board);
-	printf("Board destroyed.\n");
 }

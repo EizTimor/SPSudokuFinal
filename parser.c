@@ -8,9 +8,11 @@
 #include <stdlib.h>
 #include "parser.h"
 
-#define INV_COMMAND_ERROR "Error: invalid command"
-#define MALLOC_ERROR "Error: malloc has failed\n"
+#define INV_COMMAND_ERROR "Error: invalid command."
+#define MALLOC_ERROR "Error: malloc has failed.\n"
 #define WRONG_GAME_MODE_ERROR "Error: '%s' command is not available in the current game mode.\n the command is available in %s."
+#define NOT_ENOUGH_PARAMS_ERROR "Error: not enough parameters.\n'%s' command requires %d parameters."
+#define TOO_MANY_PARAMS_ERROR "Error: too many parameters.\n'%s' command requires %d parameters."
 
 Command* create_command(int id, int params[3], float float_param,
 		char* string_param, char* error_message) {
@@ -201,17 +203,13 @@ int fill_int_params(const char* command_name, int num_params, int params[3],
 		if (i < num_params) {
 			params[i] = atoi(token);
 		} else {
-			sprintf(error_message,
-					"Error: too many parameters.\n'%s' command requires %d parameters.",
-					command_name, num_params);
+			sprintf(error_message, TOO_MANY_PARAMS_ERROR, command_name, num_params);
 			return 0;
 		}
 		i++;
 	}
 	if (i < num_params && !optional) {
-		sprintf(error_message,
-				"Error: not enough parameters.\n'%s' command requires %d parameters.",
-				command_name, num_params);
+		sprintf(error_message, NOT_ENOUGH_PARAMS_ERROR, command_name, num_params);
 		return 0;
 	}
 	return 1;
@@ -234,17 +232,13 @@ int fill_float_params(const char* command_name, int num_params,
 		if (i < num_params) {
 			*float_param = atof(token);
 		} else {
-			sprintf(error_message,
-					"Error: too many parameters.\n'%s' command requires %d parameters.",
-					command_name, num_params);
+			sprintf(error_message, TOO_MANY_PARAMS_ERROR, command_name, num_params);
 			return 0;
 		}
 		i++;
 	}
 	if (i < num_params && !optional) {
-		sprintf(error_message,
-				"Error: not enough parameters.\n'%s' command requires %d parameters.",
-				command_name, num_params);
+		sprintf(error_message, NOT_ENOUGH_PARAMS_ERROR, command_name, num_params);
 		return 0;
 	}
 	return 1;
@@ -263,23 +257,18 @@ int fill_string_params(const char* command_name, int num_params, char** param,
 	const char delim[] = " \t\r\n";
 	int i = 0;
 	char *token = NULL;
-	printf("Getting string parameter...\n");
 	while ((token = strtok(NULL, delim)) != NULL) {
 		if (i < num_params) {
 			*param = token;
 			printf("String param: %s\n", *param);
 		} else {
-			sprintf(error_message,
-					"Error: too many parameters.\n'%s' command requires %d parameters.",
-					command_name, num_params);
+			sprintf(error_message, TOO_MANY_PARAMS_ERROR, command_name, num_params);
 			return 0;
 		}
 		i++;
 	}
 	if (i < num_params && !optional) {
-		sprintf(error_message,
-				"Error: not enough parameters.\n'%s' command requires %d parameters.",
-				command_name, num_params);
+		sprintf(error_message, NOT_ENOUGH_PARAMS_ERROR, command_name, num_params);
 		return 0;
 	}
 	return 1;
