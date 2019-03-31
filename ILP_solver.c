@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "ILP_solver.h"
+#include <unistd.h>
 
 #define DEFAULT 0
 
@@ -272,9 +273,11 @@ int ilp(Board* game) {
 	} else
 		status = 0;
 
-	printf("Copying sol to board...\n");
-	if (status)
+	printf("Status %d\n", status);
+	if (status) {
+		printf("Copying to board...\n");
 		ilp_solution_to_board(game, sol);
+	}
 
 	printf("Clearing Env...\n");
 	free_all(env, model, sol, ind, obj, vtype);

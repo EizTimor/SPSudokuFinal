@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "solver.h"
+#include <unistd.h>
 
 #define DEFAULT 0
 #define SIMPLE 3
@@ -185,7 +186,6 @@ int get_random_value(Cell* cell) {
 	int r;
 	OptionNode* node = cell->options->top;
 
-	printf("Randomizing...\n");
 	r = rand() % cell->options->length;
 	for (; r >= 0; r--)
 		node = node->next;
@@ -222,12 +222,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			rCol = rand() % game->board_size;
 			if (game->current[rRow][rCol].value == DEFAULT) {
 				if (game->current[rRow][rCol].options->length == 0) {
-					for (k = 0; k < count; k++) {
-						set_value(game, rows[k] + 1, cols[k] + 1, DEFAULT);
-						rows[k] = 0;
-						cols[k] = 0;
-					}
-					count = 0;
+					j--;
 					break;
 				}
 				rows[j] = rRow;
@@ -240,21 +235,25 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 		}
 		if (!count)
 			continue;
-		if (!ilp(game)) {
+		k = ilp(game);
+		printf("k is %d and i is %d\n", k, i);
+		if (k == 0) {
 			for (k = 0; k < count; k++) {
 				set_value(game, rows[k] + 1, cols[k] + 1, DEFAULT);
 				rows[k] = 0;
 				cols[k] = 0;
 			}
 			count = 0;
-		} else
+		} else {
 			break;
+		}
 	}
 
 	if (i == MAX_ITERS) {
 		free(rows);
 		free(cols);
 		destroy_board(copy);
+		printf("MAX_ITERS\n");
 		/* error message */
 		return 0;
 	}
@@ -263,20 +262,20 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	print_board(game);
 	moves = create_moves_list();
 	/* clear all but y cells */
-	for (k = 0; k < count; k++)
-		insert_move(moves, rows[k] + 1, cols[k] + 1, DEFAULT,
-				game->current[rows[k]][cols[k]].value);
-
 	for (i = 0; i < game->board_size * game->board_size - y; i++) {
 		rRow = rand() % game->board_size;
 		rCol = rand() % game->board_size;
 		if (game->current[rRow][rCol].value == DEFAULT)
 			i--;
 		else {
-			game->current[rRow][rCol].value = DEFAULT;
-			if (copy->current[rRow][rCol].value != DEFAULT)
-				insert_move(moves, rRow + 1, rCol + 1, copy->current[rRow][rCol].value,
-				DEFAULT);
+			set_value(game, rRow + 1, rCol + 1, DEFAULT);
+		}
+	}
+
+	for (i = 0; i < game->board_size; i++) {
+		for (j = 0; j < game->board_size; j++) {
+			if (game->current[i][j].value != copy->current[i][j].value)
+				insert_move(moves, i + 1, j + 1, copy->current[i][j].value, game->current[i][j].value);
 		}
 	}
 
@@ -356,8 +355,8 @@ void undo(Board* game, TurnsList* turns) {
 		return;
 	}
 	move = turns->current->changes->top;
-	amount = turns->current->prev->changes->length;
-	while (amount >= 0) {
+	amount = turns->current->changes->length;
+	while (amount > 0) {
 		set_value(game, move->row, move->col, move->prev_val);
 		printf("Cell <%d,%d> has been modified back to %d\n", move->row,
 				move->col, move->prev_val);
