@@ -222,7 +222,12 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			rCol = rand() % game->board_size;
 			if (game->current[rRow][rCol].value == DEFAULT) {
 				if (game->current[rRow][rCol].options->length == 0) {
-					j--;
+					for (k = 0; k < count; k++) {
+						set_value(game, rows[k] + 1, cols[k] + 1, DEFAULT);
+						rows[k] = 0;
+						cols[k] = 0;
+					}
+					count = 0;
 					break;
 				}
 				rows[j] = rRow;
