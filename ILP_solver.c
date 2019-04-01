@@ -99,7 +99,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[k] = 1;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, "c1");
 			if (e) {
 				printf("ERROR %d constraint #1: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -116,7 +116,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[j] = 1;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, "c2");
 			if (e) {
 				printf("ERROR %d constraint #2: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -133,7 +133,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[i] = 1;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, "c3");
 			if (e) {
 				printf("ERROR %d constraint #3: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -149,7 +149,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				c_ind[0] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k - 1;
 				e = GRBaddconstr(*model, 1, c_ind, c_val,
-				GRB_EQUAL, 1.0, NULL);
+				GRB_EQUAL, 1.0, "c4");
 				if (e) {
 					printf("ERROR %d constraint #4: %s\n", e,
 							GRBgeterrormsg(*env));
@@ -177,7 +177,7 @@ int ilp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 					}
 				}
 				e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-				GRB_EQUAL, 1.0, NULL);
+				GRB_EQUAL, 1.0, "c5");
 				if (e) {
 					printf("ERROR %d constraint #5: %s\n", e,
 							GRBgeterrormsg(*env));
@@ -216,7 +216,6 @@ int ilp(Board* game) {
 	double* obj;
 	char* vtype;
 	int optimstatus;
-	double objval;
 	int status = 1;
 	printf("Starting ilp...\n");
 
@@ -254,12 +253,6 @@ int ilp(Board* game) {
 			printf("ERROR %d GRBgetintattr(): %s\n", e, GRBgeterrormsg(env));
 			status = 0;
 		}
-		e = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
-		if (e) {
-			printf("ERROR %d GRBgetdoubleattr(): %s\n", e, GRBgeterrormsg(env));
-			status = 0;
-		}
-		printf("Objval is %f\n", objval);
 	}
 
 	if (optimstatus == GRB_OPTIMAL) {
@@ -279,6 +272,11 @@ int ilp(Board* game) {
 		ilp_solution_to_board(game, sol);
 	}
 
+	e = GRBwrite(model, "linearProgram.lp");
+	if (e) {
+		printf("ERROR %d GRBgetdblattrarray(): %s\n", e, GRBgeterrormsg(env));
+		status = 0;
+	}
 	printf("Clearing Env...\n");
 	free_all(env, model, sol, ind, obj, vtype);
 
@@ -338,7 +336,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[k] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, "c1");
 			if (e) {
 				printf("ERROR %d constraint #1: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -355,7 +353,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[j] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, "c2");
 			if (e) {
 				printf("ERROR %d constraint #2: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -372,7 +370,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				(*obj)[i] = 1.0;
 			}
 			e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-			GRB_EQUAL, 1.0, NULL);
+			GRB_EQUAL, 1.0, "c3");
 			if (e) {
 				printf("ERROR %d constraint #3: %s\n", e, GRBgeterrormsg(*env));
 				return 0;
@@ -388,7 +386,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 				c_ind[0] = i * (game->board_size * game->board_size)
 						+ (j * game->board_size) + k - 1;
 				e = GRBaddconstr(*model, 1, c_ind, c_val,
-				GRB_EQUAL, 1.0, NULL);
+				GRB_EQUAL, 1.0, "c4");
 				if (e) {
 					printf("ERROR %d constraint #4: %s\n", e,
 							GRBgeterrormsg(*env));
@@ -416,7 +414,7 @@ int lp_add_constraints(Board* game, GRBenv** env, GRBmodel** model,
 					}
 				}
 				e = GRBaddconstr(*model, game->board_size, *ind, *obj,
-				GRB_EQUAL, 1.0, NULL);
+				GRB_EQUAL, 1.0, "c5");
 				if (e) {
 					printf("ERROR %d constraint #5: %s\n", e,
 							GRBgeterrormsg(*env));

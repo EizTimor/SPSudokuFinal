@@ -238,7 +238,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 			} else
 				j--;
 		}
-		if (!count)
+		if (x != 0 && !count)
 			continue;
 		k = ilp(game);
 		printf("k is %d and i is %d\n", k, i);
