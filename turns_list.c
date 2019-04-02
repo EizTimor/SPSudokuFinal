@@ -37,30 +37,31 @@ void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) 
 	node->new_val = new_val;
 
 	if (moves->top != NULL) {
-		node->prev = moves->top->prev;
 		moves->top->prev->next = node;
 		moves->top->prev = node;
-		node->next = moves->top;
+		node->next = NULL;
 	} else {
 		node->prev = node;
-		node->next = node;
+		node->next = NULL;
 		moves->top = node;
+		moves->length = 0;
 	}
 
-	moves->length = moves->length + 1;
+	moves->length += 1;
 }
 
 void destroy_moves_list(MovesList* moves) {
 	MoveNode* node;
 
 	while (moves->length) {
+		printf("moves length is %d\n", moves->length);
 		node = moves->top->next;
 		free(moves->top);
 		moves->top = node;
 		moves->length = moves->length - 1;
 	}
 
-	free(moves);
+	/*free(moves);*/
 }
 
 TurnsList* create_turns_list() {
@@ -86,6 +87,7 @@ void insert_turn(TurnsList* turns, MovesList* changes) {
 		/* error message */
 		exit(0);
 	}
+	clean_from_current(turns);
 	node->changes = changes;
 	if (turns->length != 0) {
 		node->prev = turns->top->prev;
@@ -93,27 +95,33 @@ void insert_turn(TurnsList* turns, MovesList* changes) {
 		turns->top->prev = node;
 	}
 	else {
-		node->prev = node;
 		turns->top = node;
+		turns->top->prev = node;
 	}
-	node->next = turns->top;
+	node->next = NULL;
 	turns->current = node;
-	turns->length = turns->length + 1;
+	turns->length += 1;
 	turns->pos += 1;
+	printf("turns pos is %d\n", turns->pos);
 }
 
 void clean_from_current(TurnsList* turns) {
-	TurnNode *turn = turns->current, *tmp;
-	if (turns->current == turns->top)
+	TurnNode *turn = turns->current, *tmp = NULL;
+	if (turns->pos == 0) {
+		tmp = turns->top;
 		turns->top = NULL;
-	else
-		turn->prev->next = NULL;
+	}
+	else {
+		tmp = turn->next;
+		turn->next = NULL;
+	}
 
+	turn = tmp;
 	while (turn != NULL) {
 		tmp = turn->next;
 		destroy_moves_list(turn->changes);
 		free(turn);
-		turns->length = turns->length - 1;
+		turns->length -= 1;
 		turn = tmp;
 	}
 	turns->pos = turns->length;

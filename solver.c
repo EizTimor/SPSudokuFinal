@@ -98,17 +98,18 @@ int number_of_solutions(Board* game) {
 					stack->top->value);
 			if (get_first_empty_cell(game, &row, &col)) {
 				push(stack, row, col, 1);
-			}
-			else { /* board is complete */
+			} else { /* board is complete */
 				count += 1;
-				set_value(game, stack->top->row + 1, stack->top->column + 1, DEFAULT);
+				set_value(game, stack->top->row + 1, stack->top->column + 1,
+				DEFAULT);
 				if (stack->top->value < game->board_size) /* we can try another value for this cell */
 					stack->top->value += 1;
 				else {
 					while (!is_empty(stack)
 							&& stack->top->value == game->board_size) { /* pop until we find a cell to modify */
-						set_value(game, stack->top->row + 1, stack->top->column + 1,
-						DEFAULT);
+						set_value(game, stack->top->row + 1,
+								stack->top->column + 1,
+								DEFAULT);
 						pop(stack, node);
 					}
 					if (!is_empty(stack))
@@ -118,8 +119,7 @@ int number_of_solutions(Board* game) {
 		} else {
 			if (stack->top->value < game->board_size) { /* we can try another value for this cell */
 				stack->top->value += 1;
-			}
-			else {
+			} else {
 				while (!is_empty(stack) && stack->top->value == game->board_size) { /* pop until we find a cell to modify */
 					set_value(game, stack->top->row + 1, stack->top->column + 1,
 					DEFAULT);
@@ -162,14 +162,38 @@ int is_there_errors(Board* game) {
 	return 0;
 }
 
-int guess_solution(Board* game, float t) {
-	printf("%f", t);
+int guess_solution(Board* game, TurnsList* turns, float t) {
+	int i, j;
+	MovesList* moves;
+	Board* copy;
+	int flag;
 	if (is_there_errors(game)) {
 		/* print error message */
 		return 0;
 	}
 
-	return lp(game);
+	copy = create_board_copy(game);
+	lp(copy, t);
+	flag = num_of_empty_cells(copy);
+	if (flag != 0) {
+		destroy_board(copy);
+		return 0;
+	}
+
+	moves = create_moves_list();
+	for (i = 0; i < game->board_size; i++) {
+		for (j = 0; j < game->board_size; j++) {
+			if (game->current[i][j].value != copy->current[i][j].value) {
+				insert_move(moves, i + 1, j + 1, game->current[i][j].value,
+						copy->current[i][j].value);
+				set_value(game, i + 1, j + 1, copy->current[i][j].value);
+			}
+		}
+	}
+
+	insert_turn(turns, moves);
+	destroy_board(copy);
+	return 1;
 }
 
 int num_of_empty_cells(Board* game) {
@@ -280,7 +304,8 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			if (game->current[i][j].value != copy->current[i][j].value)
-				insert_move(moves, i + 1, j + 1, copy->current[i][j].value, game->current[i][j].value);
+				insert_move(moves, i + 1, j + 1, copy->current[i][j].value,
+						game->current[i][j].value);
 		}
 	}
 
@@ -302,7 +327,7 @@ int get_hint(Board* game, int row, int col, int type) {
 			return 0;
 		}
 	} else {
-		if (!lp(copy)) {
+		if (!lp(copy, 0.5)) {
 			/* error message */
 			return 0;
 		}
@@ -337,13 +362,15 @@ int auto_fill(Board* game, TurnsList* turns) {
 
 	for (row = 0; row < game->board_size; row++)
 		for (col = 0; col < game->board_size; col++) {
-			if (copy->current[row][col].value == DEFAULT && copy->current[row][col].options->length == 1) {
+			if (copy->current[row][col].value == DEFAULT
+					&& copy->current[row][col].options->length == 1) {
 				set_value(game, row + 1, col + 1,
 						copy->current[row][col].options->top->value);
 				insert_move(moves, row + 1, col + 1, DEFAULT,
 						game->current[row][col].value);
 				printf("Cell <%d,%d> has been auto-filled with the value %d\n",
-						row + 1, col + 1, copy->current[row][col].options->top->value);
+						row + 1, col + 1,
+						copy->current[row][col].options->top->value);
 			}
 		}
 
@@ -370,6 +397,7 @@ void undo(Board* game, TurnsList* turns) {
 	}
 	turns->current = turns->current->prev;
 	turns->pos -= 1;
+	printf("turns pos undo is %d\n", turns->pos);
 }
 
 void redo(Board* game, TurnsList* turns) {
@@ -379,8 +407,14 @@ void redo(Board* game, TurnsList* turns) {
 		/* error message */
 		return;
 	}
-	move = turns->current->next->changes->top;
-	amount = turns->current->next->changes->length;
+
+	if (turns->length > 0 && turns->pos == 0) {
+		move = turns->top->changes->top;
+		amount = turns->top->changes->length;
+	} else {
+		move = turns->current->next->changes->top;
+		amount = turns->current->next->changes->length;
+	}
 	while (amount > 0) {
 		set_value(game, move->row, move->col, move->new_val);
 		printf("Cell <%d,%d> has been modified back to %d\n", move->row,
@@ -388,7 +422,12 @@ void redo(Board* game, TurnsList* turns) {
 		move = move->next;
 		amount--;
 	}
-	turns->current = turns->current->next;
+	if (turns->pos != 0) {
+		if (turns->current->next != NULL) {
+			turns->current = turns->current->next;
+		}
+	} else
+		turns->current = turns->top;
 	turns->pos += 1;
 }
 
@@ -491,7 +530,7 @@ int execute_command(Command* cmd) {
 			printf("Errors exist in board\n");
 			break;
 		}
-		if (!guess_solution(board, float_param)) {
+		if (!guess_solution(board, turns_list, float_param)) {
 			printf("Could not find a solution with given threshold parameter");
 			break;
 		}
@@ -554,7 +593,8 @@ int execute_command(Command* cmd) {
 			printf("Errors exist in board\n");
 			return 1;
 		}
-		printf("Number of possible solutions: %d\n", number_of_solutions(board));
+		printf("Number of possible solutions: %d\n",
+				number_of_solutions(board));
 		return 1;
 
 	case AUTOFILL:

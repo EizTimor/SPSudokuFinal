@@ -153,7 +153,7 @@ int is_there_errors(Board* game);
  *
  * 	returns: 1 if a solution was found, 0 otherwise.
  */
-int guess_solution(Board* game, float t);
+int guess_solution(Board* game, TurnsList* turns, float t);
 
 /*
  * Function: num_of_empty_cells
