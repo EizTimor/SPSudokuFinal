@@ -54,7 +54,6 @@ void destroy_moves_list(MovesList* moves) {
 	MoveNode* node;
 
 	while (moves->length) {
-		printf("moves length is %d\n", moves->length);
 		node = moves->top->next;
 		free(moves->top);
 		moves->top = node;
@@ -102,7 +101,6 @@ void insert_turn(TurnsList* turns, MovesList* changes) {
 	turns->current = node;
 	turns->length += 1;
 	turns->pos += 1;
-	printf("turns pos is %d\n", turns->pos);
 }
 
 void clean_from_current(TurnsList* turns) {

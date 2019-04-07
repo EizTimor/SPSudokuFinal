@@ -53,35 +53,67 @@ void free_all(GRBenv* env, GRBmodel* model, double* sol, int* ind, double* obj,
 }
 
 int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
-		int type) {
-	int i, j, k, e = 0;
+		int type, int* indexes, int board_size) {
+	int i, j = 0, k, e = 0, c, tmp, x;
+	double* obj = (double*) malloc(sizeof(double) * count);
+	if (!obj) {
+		printf("Malloc() error\n");
+		return 0;
+	}
 
 	if (type == 0)
-		for (i = 0; i < count; i++)
+		for (i = 0; i < count; i++) {
 			(*vtype)[i] = GRB_BINARY;
-	if (type == 1)
-		for (i = 0; i < count; i++)
-			(*vtype)[i] = GRB_CONTINUOUS;
+			obj[i] = 1;
+		}
+	if (type == 1) {
+		for (i = 0; i < board_size * board_size * board_size; i += board_size) {
+			c = 0;
+			tmp = 1;
+			for (k = i; k < i + board_size; k++) {
+				if (indexes[k] > 0) {
+					c += 1;
+				}
+			}
+			if (c == board_size)
+				x = (rand() % 6) * 2 -1;
+			else
+				x = board_size - c;
+			while (x > 0) {
+				tmp *= 11;
+				x -= 1;
+			}
+			for (k = j; k < j + c; k++) {
+				(*vtype)[k] = GRB_CONTINUOUS;
+				obj[k] = ((double) rand() / RAND_MAX / c * tmp);
+			}
+			j += c;
+		}
+	}
 
-	e = GRBaddvars(*model, count, 0, NULL, NULL, NULL, NULL, NULL, NULL, *vtype,
+	e = GRBaddvars(*model, count, 0, NULL, NULL, NULL, obj, NULL, NULL, *vtype,
 	NULL);
 	if (e) {
 		printf("ERROR %d GRBaddvars(): %s\n", e, GRBgeterrormsg(*env));
+		free(obj);
 		return 0;
 	}
 
 	e = GRBsetintattr(*model, GRB_INT_ATTR_MODELSENSE, GRB_MAXIMIZE);
 	if (e) {
 		printf("ERROR %d GRBsetintattr(): %s\n", e, GRBgeterrormsg(*env));
+		free(obj);
 		return 0;
 	}
 
 	e = GRBupdatemodel(*model);
 	if (e) {
 		printf("ERROR %d GRBupdatemodel(): %s\n", e, GRBgeterrormsg(*env));
+		free(obj);
 		return 0;
 	}
 
+	free(obj);
 	return 1;
 }
 
@@ -157,8 +189,8 @@ int add_constraints(Board* game, GRBenv** env, GRBmodel** model, double** obj,
 	}
 
 	printf("Adding cons. #4 each block has one of each value...\n");
-	for (i = 0; i < game->block_row; i++) {
-		for (j = 0; j < game->block_col; j++) {
+	for (i = 0; i < game->block_col; i++) {
+		for (j = 0; j < game->block_row; j++) {
 			for (g = 0; g < game->board_size; g++) { /* value */
 				curr = 0;
 				for (k = 0; k < game->block_row; k++) {
@@ -192,19 +224,19 @@ int add_constraints(Board* game, GRBenv** env, GRBmodel** model, double** obj,
 	return 1;
 }
 
-void solution_to_board(Board* game, double* sol, int* indexes, float th) {
+void ilp_solution_to_board(Board* game, double* sol, int* indexes) {
 	int i, j, k, index;
 
-	for (i = 0; i < game->board_size; i++) {
-		for (j = 0; j < game->board_size; j++) {
+	for (i = 0; i < game->board_size; i++)
+		for (j = 0; j < game->board_size; j++)
 			for (k = 0; k < game->board_size; k++) {
 				index = i * game->board_size * game->board_size
 						+ j * game->board_size + k;
-				if (sol[indexes[index] - 1] >= th)
+				if (sol[indexes[index] - 1] >= 1.0) {
 					set_value(game, i + 1, j + 1, k + 1);
+					break;
+				}
 			}
-		}
-	}
 }
 
 int ilp(Board* game) {
@@ -263,9 +295,11 @@ int ilp(Board* game) {
 
 	printf("count is %d\n", count);
 	printf("Creating Env...\n");
-	status = create_environment(&env, &model);
+	status = create_environment(&env, &model, 0);
 	printf("Adding Variables...\n");
-	status = status && add_variables(&env, &model, &vtype, count, 0);
+	status = status
+			&& add_variables(&env, &model, &vtype, count, 0, indexes,
+					game->board_size);
 	printf("Adding constraints...\n");
 	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes);
 
@@ -296,7 +330,7 @@ int ilp(Board* game) {
 	printf("Status %d\n", status);
 	if (status) {
 		printf("Copying to board...\n");
-		solution_to_board(game, sol, indexes, 1.0);
+		ilp_solution_to_board(game, sol, indexes);
 	}
 
 	e = GRBwrite(model, "integerLinearProgram.lp");
@@ -310,6 +344,35 @@ int ilp(Board* game) {
 	printf("Printing ILP\n");
 	print_board(game);
 	return status;
+}
+
+void lp_solution_to_board(Board* game, double* sol, int* indexes, float th) {
+	int i, j, k, index, c;
+	int* tmp = (int*) malloc(sizeof(int) * game->board_size);
+
+	for (i = 0; i < game->board_size; i++) {
+		for (j = 0; j < game->board_size; j++) {
+			c = 0;
+			if (game->current[i][j].value == DEFAULT) {
+				for (k = 0; k < game->board_size; k++) {
+					index = i * game->board_size * game->board_size
+							+ j * game->board_size + k;
+					if (sol[indexes[index] - 1] >= th) {
+						tmp[c] = k + 1;
+						c += 1;
+					}
+				}
+				while (c > 0
+						&& !is_value_valid(game, i, j, tmp[(k = rand() % c)])) {
+					tmp[k] = tmp[c - 1];
+					c -= 1;
+				}
+				if (c == 0)
+					tmp[k] = 0;
+				set_value(game, i + 1, j + 1, tmp[k]);
+			}
+		}
+	}
 }
 
 int lp(Board* game, float th) {
@@ -368,9 +431,11 @@ int lp(Board* game, float th) {
 
 	printf("count is %d\n", count);
 	printf("Creating Env...\n");
-	status = create_environment(&env, &model);
+	status = create_environment(&env, &model, 1);
 	printf("Adding Variables...\n");
-	status = status && add_variables(&env, &model, &vtype, count, 1);
+	status = status
+			&& add_variables(&env, &model, &vtype, count, 1, indexes,
+					game->board_size);
 	printf("Adding constraints...\n");
 	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes);
 
@@ -401,7 +466,7 @@ int lp(Board* game, float th) {
 	printf("Status %d\n", status);
 	if (status) {
 		printf("Copying to board...\n");
-		solution_to_board(game, sol, indexes, th);
+		lp_solution_to_board(game, sol, indexes, th);
 	}
 
 	e = GRBwrite(model, "linearProgram.lp");

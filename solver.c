@@ -531,7 +531,7 @@ int execute_command(Command* cmd) {
 			break;
 		}
 		if (!guess_solution(board, turns_list, float_param)) {
-			printf("Could not find a solution with given threshold parameter");
+			printf("Could not find a solution with given threshold parameter\n");
 			break;
 		}
 		print_board(board);
