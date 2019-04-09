@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "solver.h"
 #include <unistd.h>
+#include "solver.h"
+#include <sys/ioctl.h>
 
 #define DEFAULT 0
 #define SIMPLE 3
@@ -438,6 +439,26 @@ void reset_board(Board* game, TurnsList* turns) {
 	undo(game, turns);
 }
 
+void print_image() {
+	FILE *fptr;
+	char c;
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	if (w.ws_col >= 130) {
+		fptr = fopen("image.txt", "r");
+		if (!fptr){
+			return;
+		}
+		c = fgetc(fptr);
+		while (c != EOF) {
+			printf("%c", c);
+			c = fgetc(fptr);
+		}
+
+		fclose(fptr);
+	}
+}
+
 /*
  * the function receives a command object as parsed by the parser and executes it.
  */
@@ -508,6 +529,10 @@ int execute_command(Command* cmd) {
 		}
 		set_value_command(board, x, y, z, turns_list);
 		print_board(board);
+		if (is_finished(board)) {
+			printf("Board Solved!\n");
+			print_image();
+		}
 		return 1;
 
 	case VALIDATE:
@@ -531,7 +556,8 @@ int execute_command(Command* cmd) {
 			break;
 		}
 		if (!guess_solution(board, turns_list, float_param)) {
-			printf("Could not find a solution with given threshold parameter\n");
+			printf(
+					"Could not find a solution with given threshold parameter\n");
 			break;
 		}
 		print_board(board);
@@ -581,10 +607,26 @@ int execute_command(Command* cmd) {
 		return 1;
 
 	case HINT:
+		if (x < 1 || x > board->board_size) {
+			printf("Error: first parameter out of range\n");
+			break;
+		}
+		if (y < 1 || y > board->board_size) {
+			printf("Error: second parameter out of range\n");
+			break;
+		}
 		printf("%d\n", get_hint(board, x - 1, y - 1, 1));
 		return 1;
 
 	case GUESS_HINT:
+		if (x < 1 || x > board->board_size) {
+			printf("Error: first parameter out of range\n");
+			break;
+		}
+		if (y < 1 || y > board->board_size) {
+			printf("Error: second parameter out of range\n");
+			break;
+		}
 		printf("%d\n", get_hint(board, x - 1, y - 1, 0));
 		return 1;
 
@@ -615,3 +657,4 @@ int execute_command(Command* cmd) {
 	}
 	return 1;
 }
+

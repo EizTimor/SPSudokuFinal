@@ -11,7 +11,7 @@
 #include "solver.h"
 #include "parser.h"
 
-#define MAX_COMMAND 257
+#define MAX_COMMAND 258
 #define FGETS_ERROR "Error: fgets has failed\n"
 #define COMMAND_TOO_LONG_ERROR "Error: invalid command, too many characters\n"
 #define WELCOME_MSG "Sudoku program started, please enter a command\n"
@@ -28,8 +28,9 @@ int main() {
 			}
 			return 0;
 		}
-		if (in[MAX_COMMAND - 1] != 0) {
+		if (in[MAX_COMMAND - 2] != 0) {
 			printf("%s", COMMAND_TOO_LONG_ERROR);
+			in[MAX_COMMAND - 2] = 0;
 			continue;
 		}
 		cmd = parse_command(in);
