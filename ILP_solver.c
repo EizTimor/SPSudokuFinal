@@ -76,7 +76,7 @@ int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
 				}
 			}
 			if (c == board_size)
-				x = (rand() % 6) * 2 -1;
+				x = (rand() % 6) * 2 - 1;
 			else
 				x = board_size - c;
 			while (x > 0) {
@@ -118,8 +118,21 @@ int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
 }
 
 int add_constraints(Board* game, GRBenv** env, GRBmodel** model, double** obj,
-		int** ind, int* indexes) {
+		int** ind, int* indexes, int count) {
 	int i, j, k, f, g, e = 0, inde = 0, curr = 0;
+	int single_ind[1] = { 0 };
+	double single_obj[1] = { 1 };
+
+	printf("Adding cons. #0 each value of the program is at least 0...\n");
+	for (i = 0; i < count; i++) {
+		single_ind[0] = i;
+		e = GRBaddconstr(*model, 1, single_ind, single_obj,
+		GRB_GREATER_EQUAL, 0.0, "c0");
+		if (e) {
+			printf("ERROR %d constraint #1: %s\n", e, GRBgeterrormsg(*env));
+			return 0;
+		}
+	}
 
 	printf("Adding cons. #1 each cell has one value...\n");
 	for (i = 0; i < game->board_size; i++) {
@@ -301,7 +314,7 @@ int ilp(Board* game) {
 			&& add_variables(&env, &model, &vtype, count, 0, indexes,
 					game->board_size);
 	printf("Adding constraints...\n");
-	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes);
+	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes, count);
 
 	printf("Optimizing with status %d...\n", status);
 	if (status) {
@@ -437,7 +450,7 @@ int lp(Board* game, float th) {
 			&& add_variables(&env, &model, &vtype, count, 1, indexes,
 					game->board_size);
 	printf("Adding constraints...\n");
-	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes);
+	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes, count);
 
 	printf("Optimizing with status %d...\n", status);
 	if (status) {
