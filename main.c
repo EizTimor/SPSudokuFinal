@@ -16,6 +16,13 @@
 #define COMMAND_TOO_LONG_ERROR "Error: invalid command, too many characters\n"
 #define WELCOME_MSG "Sudoku program started, please enter a command\n"
 
+void clear_line(){
+	char c;
+	do {
+		c = fgetc(stdin);
+	} while(c != '\n' && c != EOF);
+}
+
 int main() {
 	int is_game_live = 1;
 	char in[MAX_COMMAND] = { 0 };
@@ -31,6 +38,7 @@ int main() {
 		if (in[MAX_COMMAND - 2] != 0) {
 			printf("%s", COMMAND_TOO_LONG_ERROR);
 			in[MAX_COMMAND - 2] = 0;
+			clear_line();
 			continue;
 		}
 		cmd = parse_command(in);
