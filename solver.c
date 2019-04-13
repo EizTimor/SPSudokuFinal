@@ -473,7 +473,9 @@ int execute_command(Command* cmd) {
 
 	case SOLVE:
 		destroy_board(board);
+		board = NULL;
 		destroy_turns_list(turns_list);
+		turns_list = NULL;
 		board = load_board(path);
 		if (!board) {
 			printf(FOPEN_ERROR);
@@ -486,7 +488,9 @@ int execute_command(Command* cmd) {
 
 	case EDIT:
 		destroy_board(board);
+		board = NULL;
 		destroy_turns_list(turns_list);
+		turns_list = NULL;
 		if (path) {
 			board = load_board(path);
 			if (!board) {

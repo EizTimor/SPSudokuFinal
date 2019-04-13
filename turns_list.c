@@ -137,6 +137,5 @@ void destroy_turns_list(TurnsList* turns) {
 		turns->top = node;
 		turns->length = turns->length - 1;
 	}
-
 	free(turns);
 }

@@ -34,7 +34,6 @@ Board* load_board(char* path) {
 	Board* board;
 	FILE* file = fopen(path, "r");
 	if (file == NULL) {
-		printf(FOPEN_ERROR);
 		return NULL;
 	}
 	fscanf(file, "%d", &block_row);
