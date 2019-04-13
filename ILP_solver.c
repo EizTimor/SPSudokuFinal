@@ -75,19 +75,24 @@ int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
 					c += 1;
 				}
 			}
-			if (c == board_size)
-				x = (rand() % 6) * 2 - 1;
-			else
+			if (c != 0) {
+				/*if (c >= 9 && c != board_size)
+					x = (rand() % 4) * 2 - 1;
+				else if (c == board_size)
+					x = (rand() % 6) * 2 - 1;
+				else
+					x = board_size - c;
+				while (x > 0) {
+					tmp *= 7;
+					x -= 1;
+				}*/
 				x = board_size - c;
-			while (x > 0) {
-				tmp *= 11;
-				x -= 1;
+				for (k = j; k < j + c; k++) {
+					(*vtype)[k] = GRB_CONTINUOUS;
+					obj[k] = (double) ((rand() % 17) + 1) * x * x * x * x;
+				}
+				j += c;
 			}
-			for (k = j; k < j + c; k++) {
-				(*vtype)[k] = GRB_CONTINUOUS;
-				obj[k] = ((double) rand() / RAND_MAX / c * tmp);
-			}
-			j += c;
 		}
 	}
 
@@ -129,7 +134,7 @@ int add_constraints(Board* game, GRBenv** env, GRBmodel** model, double** obj,
 		e = GRBaddconstr(*model, 1, single_ind, single_obj,
 		GRB_GREATER_EQUAL, 0.0, "c0");
 		if (e) {
-			printf("ERROR %d constraint #1: %s\n", e, GRBgeterrormsg(*env));
+			printf("ERROR %d constraint #0: %s\n", e, GRBgeterrormsg(*env));
 			return 0;
 		}
 	}
@@ -314,7 +319,8 @@ int ilp(Board* game) {
 			&& add_variables(&env, &model, &vtype, count, 0, indexes,
 					game->board_size);
 	printf("Adding constraints...\n");
-	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes, count);
+	status = status
+			&& add_constraints(game, &env, &model, &obj, &ind, indexes, count);
 
 	printf("Optimizing with status %d...\n", status);
 	if (status) {
@@ -360,35 +366,42 @@ int ilp(Board* game) {
 }
 
 void lp_solution_to_board(Board* game, double* sol, int* indexes, float th) {
-	int i, j, k, index, c;
+	int i, j, k, index, c, r, b;
 	int* tmp = (int*) malloc(sizeof(int) * game->board_size);
 
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			c = 0;
+			b = 0;
 			if (game->current[i][j].value == DEFAULT) {
 				for (k = 0; k < game->board_size; k++) {
 					index = i * game->board_size * game->board_size
 							+ j * game->board_size + k;
-					if (sol[indexes[index] - 1] >= th) {
+					if (sol[indexes[index] - 1] >= th
+							&& is_value_valid(game, i, j, k + 1)) {
 						tmp[c] = k + 1;
+						b += sol[indexes[index] - 1];
 						c += 1;
 					}
 				}
-				while (c > 0
-						&& !is_value_valid(game, i, j, tmp[(k = rand() % c)])) {
-					tmp[k] = tmp[c - 1];
-					c -= 1;
+				r = (double) rand() / RAND_MAX * b;
+				if (c > 0) {
+					while (c > 0) {
+						b -= tmp[c - 1];
+						if (b <= r)
+							break;
+						c -= 1;
+					}
+					if (c == 0)
+						tmp[c++] = 0;
+					set_value(game, i + 1, j + 1, tmp[c - 1]);
 				}
-				if (c == 0)
-					tmp[k] = 0;
-				set_value(game, i + 1, j + 1, tmp[k]);
 			}
 		}
 	}
 }
 
-int lp(Board* game, float th) {
+int lp(Board* game, float th, int type, int row, int col) {
 	int* indexes;
 	int count = 0, i, j, k, curr = 0, index = 1;
 	OptionNode* node;
@@ -450,7 +463,8 @@ int lp(Board* game, float th) {
 			&& add_variables(&env, &model, &vtype, count, 1, indexes,
 					game->board_size);
 	printf("Adding constraints...\n");
-	status = status && add_constraints(game, &env, &model, &obj, &ind, indexes, count);
+	status = status
+			&& add_constraints(game, &env, &model, &obj, &ind, indexes, count);
 
 	printf("Optimizing with status %d...\n", status);
 	if (status) {
@@ -477,7 +491,16 @@ int lp(Board* game, float th) {
 		status = 0;
 
 	printf("Status %d\n", status);
-	if (status) {
+	if (type) {
+		if (status) {
+			for (k = 0; k < game->board_size; k++) {
+				index = row * game->board_size * game->board_size
+						+ col * game->board_size + k;
+				if (sol[indexes[index] - 1] >= 0.000001)
+					printf("Value %d has %f%%\n", k + 1, sol[indexes[index] - 1] * 100);
+			}
+		}
+	} else if (status) {
 		printf("Copying to board...\n");
 		lp_solution_to_board(game, sol, indexes, th);
 	}

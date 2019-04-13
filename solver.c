@@ -174,7 +174,7 @@ int guess_solution(Board* game, TurnsList* turns, float t) {
 	}
 
 	copy = create_board_copy(game);
-	lp(copy, t);
+	lp(copy, t, 0, 0, 0);
 	flag = num_of_empty_cells(copy);
 	if (flag != 0) {
 		destroy_board(copy);
@@ -328,7 +328,7 @@ int get_hint(Board* game, int row, int col, int type) {
 			return 0;
 		}
 	} else {
-		if (!lp(copy, 0.5)) {
+		if (!lp(copy, 0, 1, row, col)) {
 			/* error message */
 			return 0;
 		}
@@ -631,7 +631,7 @@ int execute_command(Command* cmd) {
 			printf("Error: second parameter out of range\n");
 			break;
 		}
-		printf("%d\n", get_hint(board, x - 1, y - 1, 0));
+		get_hint(board, x - 1, y - 1, 0);
 		return 1;
 
 	case NUM_SOLUTIONS:
