@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "ILP_solver.h"
-#include <unistd.h>
 
 #define DEFAULT 0
 
@@ -76,20 +75,20 @@ int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
 				}
 			}
 			if (c != 0) {
-				/*if (c >= 9 && c != board_size)
+				if (c >= 9 && c != board_size)
 					x = (rand() % 4) * 2 - 1;
 				else if (c == board_size)
 					x = (rand() % 6) * 2 - 1;
 				else
 					x = board_size - c;
 				while (x > 0) {
-					tmp *= 7;
+					tmp *= 5;
 					x -= 1;
-				}*/
+				}
 				x = board_size - c;
 				for (k = j; k < j + c; k++) {
 					(*vtype)[k] = GRB_CONTINUOUS;
-					obj[k] = (double) ((rand() % 17) + 1) * x * x * x * x;
+					obj[k] = (double) ((rand() % 7) + 1) / c * tmp;
 				}
 				j += c;
 			}

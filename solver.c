@@ -21,6 +21,8 @@
 #define MALLOC_ERROR "Error: malloc has failed\n"
 #define FOPEN_ERROR "Error: could not open file\n"
 #define FGETS_ERROR "Error: fgets has failed\n"
+#define FIXED_CELL "Cell is fixed, you don't need an hint\n"
+#define FILLED_CELL "Cell is filled already, you don't need an hint\n"
 
 Board* board = NULL;
 TurnsList* turns_list = NULL;
@@ -322,6 +324,15 @@ int get_hint(Board* game, int row, int col, int type) {
 	Board* copy = create_board_copy(game);
 	int value;
 
+	if (game->current[row][col].isFixed) {
+		printf("%s", FIXED_CELL);
+		return -1;
+	}
+	if (game->current[row][col].value != DEFAULT) {
+		printf("%s", FILLED_CELL);
+		return -1;
+	}
+
 	if (type) {
 		if (!ilp(copy)) {
 			/* error message */
@@ -332,15 +343,6 @@ int get_hint(Board* game, int row, int col, int type) {
 			/* error message */
 			return 0;
 		}
-	}
-
-	if (game->current[row][col].isFixed) {
-		/* error message */
-		return 0;
-	}
-	if (game->current[row][col].value != DEFAULT) {
-		/* error message */
-		return 0;
 	}
 
 	value = copy->current[row][col].value;
@@ -466,6 +468,7 @@ int execute_command(Command* cmd) {
 	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
 	float float_param = cmd->float_param;
 	char* path = cmd->string_param;
+	int tmp;
 	switch (cmd->id) {
 	case INVALID_COMMAND:
 		printf("%s\n", cmd->error_message);
@@ -619,7 +622,9 @@ int execute_command(Command* cmd) {
 			printf("Error: second parameter out of range\n");
 			break;
 		}
-		printf("%d\n", get_hint(board, x - 1, y - 1, 1));
+		tmp = get_hint(board, x - 1, y - 1, 1);
+		if (tmp > 0)
+			printf("You should set this cell to %d\n", tmp);
 		return 1;
 
 	case GUESS_HINT:
