@@ -10,7 +10,7 @@
 
 #define INV_COMMAND_ERROR "Error: invalid command."
 #define MALLOC_ERROR "Error: malloc has failed.\n"
-#define WRONG_GAME_MODE_ERROR "Error: '%s' command is not available in the current game mode.\n the command is available in %s."
+#define WRONG_GAME_MODE_ERROR "Error: '%s' command is not available in the current game mode.\nThe command is available in %s."
 #define NOT_ENOUGH_PARAMS_ERROR "Error: not enough parameters.\n'%s' command requires %d parameters."
 #define TOO_MANY_PARAMS_ERROR "Error: too many parameters.\n'%s' command requires %d parameters."
 
