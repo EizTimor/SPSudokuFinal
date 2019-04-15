@@ -23,6 +23,7 @@
 #define FGETS_ERROR "Error: fgets has failed\n"
 #define FIXED_CELL "Cell is fixed, you don't need an hint\n"
 #define FILLED_CELL "Cell is filled already, you don't need an hint\n"
+#define NO_HINT_AVAILABLE "Board is unsolvable so no hint is available\n"
 
 Board* board = NULL;
 TurnsList* turns_list = NULL;
@@ -321,8 +322,13 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 }
 
 int get_hint(Board* game, int row, int col, int type) {
-	Board* copy = create_board_copy(game);
+	Board* copy;
 	int value;
+
+	if (is_there_errors(game)) {
+		printf("Errors exist in board\n");
+		return -1;
+	}
 
 	if (game->current[row][col].isFixed) {
 		printf("%s", FIXED_CELL);
@@ -333,14 +339,17 @@ int get_hint(Board* game, int row, int col, int type) {
 		return -1;
 	}
 
+	copy = create_board_copy(game);
 	if (type) {
 		if (!ilp(copy)) {
-			/* error message */
+			printf("%s", NO_HINT_AVAILABLE);
+			destroy_board(copy);
 			return 0;
 		}
 	} else {
 		if (!lp(copy, 0, 1, row, col)) {
-			/* error message */
+			printf("%s", NO_HINT_AVAILABLE);
+			destroy_board(copy);
 			return 0;
 		}
 	}
