@@ -525,7 +525,11 @@ int execute_command(Command* cmd) {
 		return 1;
 
 	case MARK_ERORRS:
-		mark_errors = cmd->params[0];
+		if (x < 0 || x > 1) {
+			printf("Error: first parameter out of range. Should be 0 or 1.\n");
+			break;
+		}
+		mark_errors = x;
 		return 1;
 
 	case PRINT_BOARD:
@@ -534,15 +538,15 @@ int execute_command(Command* cmd) {
 
 	case SET:
 		if (x < 1 || x > board->board_size) {
-			printf("Error: first parameter out of range\n");
+			printf("Error: first parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
 			break;
 		}
 		if (y < 1 || y > board->board_size) {
-			printf("Error: second parameter out of range\n");
+			printf("Error: second parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
 			break;
 		}
 		if (z < 0 || z > board->board_size) {
-			printf("Error: third parameter out of range\n");
+			printf("Error: third parameter out of range. Should be between %d and %d.\n", 0, board->board_size);
 			break;
 		}
 		if (current_game_mode == GAME_MODE_SOLVE
@@ -552,7 +556,7 @@ int execute_command(Command* cmd) {
 		}
 		set_value_command(board, x, y, z, turns_list);
 		print_board(board);
-		if (is_finished(board)) {
+		if (current_game_mode == GAME_MODE_SOLVE && is_finished(board)) {
 			printf("Board Solved!\n");
 			print_image();
 		}
@@ -631,11 +635,11 @@ int execute_command(Command* cmd) {
 
 	case HINT:
 		if (x < 1 || x > board->board_size) {
-			printf("Error: first parameter out of range\n");
+			printf("Error: first parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
 			break;
 		}
 		if (y < 1 || y > board->board_size) {
-			printf("Error: second parameter out of range\n");
+			printf("Error: second parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
 			break;
 		}
 		tmp = get_hint(board, x - 1, y - 1, 1);
@@ -645,11 +649,11 @@ int execute_command(Command* cmd) {
 
 	case GUESS_HINT:
 		if (x < 1 || x > board->board_size) {
-			printf("Error: first parameter out of range\n");
+			printf("Error: first parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
 			break;
 		}
 		if (y < 1 || y > board->board_size) {
-			printf("Error: second parameter out of range\n");
+			printf("Error: second parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
 			break;
 		}
 		get_hint(board, x - 1, y - 1, 0);
