@@ -85,14 +85,21 @@ int number_of_solutions(Board* game) {
 	StackNode* node = (StackNode*) malloc(sizeof(StackNode));
 	if (node == NULL) {
 		/* print error */
+		destroy_stack(stack);
 		exit(0);
 	}
 
-	if (!validate_board(game))
+	if (!validate_board(game)) {
+		destroy_stack(stack);
+		free(node);
 		return 0;
+	}
 
-	if (!get_first_empty_cell(game, &row, &col))
+	if (!get_first_empty_cell(game, &row, &col)) {
+		destroy_stack(stack);
+		free(node);
 		return 1;
+	}
 
 	push(stack, row, col, 1);
 	while (!is_empty(stack)) {
@@ -457,7 +464,7 @@ void print_image() {
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 	if (w.ws_col >= 130) {
 		fptr = fopen("image.txt", "r");
-		if (!fptr){
+		if (!fptr) {
 			return;
 		}
 		c = fgetc(fptr);
