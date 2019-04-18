@@ -80,8 +80,11 @@ int number_of_solutions(Board* game) {
 	int count = 0;
 	int row = 0, col = 0;
 	Stack* stack = init_stack();
+	if (!stack) {
+		return -1;
+	}
 	StackNode* node = (StackNode*) malloc(sizeof(StackNode));
-	if (node == NULL) {
+	if (!node) {
 		printf("%s", MALLOC_ERROR);
 		destroy_stack(stack);
 		return -1;
@@ -99,14 +102,24 @@ int number_of_solutions(Board* game) {
 		return 1;
 	}
 
-	push(stack, row, col, 1);
+	if (!push(stack, row, col, 1)) {
+		printf("%s", MALLOC_ERROR);
+		destroy_stack(stack);
+		free(node);
+		return -1;
+	}
 	while (!is_empty(stack)) {
 		if (is_value_valid(game, stack->top->row, stack->top->column,
 				stack->top->value)) {
 			set_value(game, stack->top->row + 1, stack->top->column + 1,
 					stack->top->value);
 			if (get_first_empty_cell(game, &row, &col)) {
-				push(stack, row, col, 1);
+				if (!push(stack, row, col, 1)) {
+					printf("%s", MALLOC_ERROR);
+					destroy_stack(stack);
+					free(node);
+					return -1;
+				}
 			} else { /* board is complete */
 				count += 1;
 				set_value(game, stack->top->row + 1, stack->top->column + 1,

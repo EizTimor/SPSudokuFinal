@@ -16,7 +16,7 @@ Stack* init_stack() {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
     if (stack == NULL) {
     	printf(MALLOC_ERROR);
-		exit(0);
+		return NULL;
 	}
     stack->top = NULL;
     stack->length=0;
@@ -24,11 +24,11 @@ Stack* init_stack() {
     return stack;
 }
 
-void push(Stack* stack, int row, int col, int val) {
+int push(Stack* stack, int row, int col, int val) {
     StackNode* node = (StackNode*)malloc(sizeof (StackNode));
     if (node == NULL) {
     	printf(MALLOC_ERROR);
-        exit(0);
+        return 0;
     }
 
     node->column = col;
@@ -38,6 +38,7 @@ void push(Stack* stack, int row, int col, int val) {
 
     stack->top = node;
     stack->length = stack->length + 1;
+    return 1;
 }
 
 void pop(Stack* stack, StackNode* popped) {
