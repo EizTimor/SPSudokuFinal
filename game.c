@@ -67,7 +67,6 @@ int remove_option(Cell* cell, int value) {
 	while (curr->value != value) {
 		curr = curr->next;
 		if (count == cell->options->length) {
-			/*free(curr);*/
 			return 0;
 		}
 		count++;

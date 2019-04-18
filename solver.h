@@ -27,21 +27,6 @@
 int is_finished(Board* game);
 
 /*
- * Function: is_value_valid
- * ----------------------
- * 	Receives a Board, and three integers representing row number, column number, value.
- * 	It checks if the value is legal in the board at coordinates (row, col).
- *
- * 	game : the Board which holds the current board.
- * 	row : an integer representing the row coordinate of a cell.
- * 	col : an integer representing the column coordinate of a cell.
- * 	value : an integer representing the value we are trying to verify.
- *
- * 	returns: 1 if the value is legal, 0 otherwise.
- */
-int is_value_valid(Board* game, int row, int col, int value);
-
-/*
  * Function: set_value_command
  * ----------------------
  * 	Receives a Board, and three integers representing row number, column number, value.
@@ -57,34 +42,6 @@ int is_value_valid(Board* game, int row, int col, int value);
  * 	returns: ?
  */
 void set_value_command(Board* game, int row, int col, int value, TurnsList* turns);
-
-/*
- * Function: update_options_after_set
- * ----------------------
- * 	Receives a Board, and two integers representing row number, column number.
- * 	It modifies options lists only for the affected cells.
- *
- * 	game : the Board which holds the current board.
- * 	row : an integer representing the row coordinate of a cell.
- * 	col : an integer representing the column coordinate of a cell.
- *
- * 	returns: ?
- */
-void update_options_after_set(Board* game, int row, int col);
-
-/*
- * Function: update_cell_options
- * ----------------------
- * 	Receives a Board, and two integers representing row number, column number.
- * 	It modifies options lists for it.
- *
- * 	game : the Board which holds the current board.
- * 	row : an integer representing the row coordinate of a cell.
- * 	col : an integer representing the column coordinate of a cell.
- *
- * 	returns: ?
- */
-void update_cell_options(Board* game, int row, int col);
 
 /*
  * Function: validate_board
@@ -118,19 +75,6 @@ int number_of_solutions(Board* game);
  * 	returns: ?
  */
 void check_errors_in_board(Board* game);
-
-/*
- * Function: check_specific_error
- * ----------------------
- * 	Receives a Board, and two integers indicating the cell's row and column, and check only the related cells for errors.
- *
- * 	game : the Board which holds the current board.
- * 	row : an integer indicating in which row the cell is located.
- * 	col : an integer indicating in which column the cell is located.
- *
- * 	returns: ?
- */
-void check_specific_error(Board* game, int row, int col);
 
 /*
  * Function: is_there_errors

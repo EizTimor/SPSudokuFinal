@@ -24,6 +24,8 @@
 #define FIXED_CELL "Cell is fixed, you don't need an hint\n"
 #define FILLED_CELL "Cell is filled already, you don't need an hint\n"
 #define NO_HINT_AVAILABLE "Board is unsolvable so no hint is available\n"
+#define EXCEEDED_MAX_ITERS "Tried to generate board for 1000 times and didn't succeed\n"
+#define ERRORS_EXIST "Errors exist in board\n"
 
 Board* board = NULL;
 TurnsList* turns_list = NULL;
@@ -57,10 +59,6 @@ int validate_board(Board* game) {
  * ----------------------
  * 	Receives a Board, and two pointers. Finds the first empty cell and change the pointers value accordingly.
  *
- * 	game : the Board which holds the current board.
- * 	row : a pointer representing the row coordinate of a cell.
- * 	col : a pointer representing the column coordinate of a cell.
- *
  * 	returns: 1 if there's an empty cell, 0 otherwise.
  */
 int get_first_empty_cell(Board* game, int* row, int* col) {
@@ -84,9 +82,9 @@ int number_of_solutions(Board* game) {
 	Stack* stack = init_stack();
 	StackNode* node = (StackNode*) malloc(sizeof(StackNode));
 	if (node == NULL) {
-		/* print error */
+		printf("%s", MALLOC_ERROR);
 		destroy_stack(stack);
-		exit(0);
+		return -1;
 	}
 
 	if (!validate_board(game)) {
@@ -178,10 +176,6 @@ int guess_solution(Board* game, TurnsList* turns, float t) {
 	MovesList* moves;
 	Board* copy;
 	int flag;
-	if (is_there_errors(game)) {
-		/* print error message */
-		return 0;
-	}
 
 	copy = create_board_copy(game);
 	lp(copy, t, 0, 0, 0);
@@ -235,21 +229,23 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	Board* copy;
 
 	if (!validate_board(game)) {
-		/* error message */
-		return 0;
-	}
-	if (num_of_empty_cells(game) < x) {
-		/* error message */
+		printf("%s", VALIDATION_FAILED);
 		return 0;
 	}
 
-	copy = create_board_copy(game);
 	rows = (int *) malloc(sizeof(int) * x);
-	cols = (int *) malloc(sizeof(int) * x);
-	if (!rows || !cols) {
-		/* error message */
-		exit(0);
+	if (!rows) {
+		printf("%s", MALLOC_ERROR);
+		return 0;
 	}
+	cols = (int *) malloc(sizeof(int) * x);
+	if (!cols) {
+		printf("%s", MALLOC_ERROR);
+		free(rows);
+		return 0;
+	}
+	copy = create_board_copy(game);
+
 	for (; i < MAX_ITERS; i++) {
 		for (j = 0; j < x; j++) {
 			/* find and allocate values to x random cells */
@@ -293,8 +289,7 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 		free(rows);
 		free(cols);
 		destroy_board(copy);
-		printf("MAX_ITERS\n");
-		/* error message */
+		printf("%s", EXCEEDED_MAX_ITERS);
 		return 0;
 	}
 
@@ -333,7 +328,7 @@ int get_hint(Board* game, int row, int col, int type) {
 	int value;
 
 	if (is_there_errors(game)) {
-		printf("Errors exist in board\n");
+		printf("%s", ERRORS_EXIST);
 		return -1;
 	}
 
@@ -371,8 +366,8 @@ int auto_fill(Board* game, TurnsList* turns) {
 	int row, col;
 	MovesList* moves;
 
-	if (!validate_board(game)) {
-		/* error message */
+	if (!is_there_error(game)) {
+		printf("%s", ERRORS_EXIST);
 		return 0;
 	}
 
@@ -402,7 +397,7 @@ void undo(Board* game, TurnsList* turns) {
 	MoveNode* move;
 	int amount;
 	if (turns->pos == 0) {
-		/* error message */
+		printf("No turns to undo\n");
 		return;
 	}
 	move = turns->current->changes->top;
@@ -416,14 +411,13 @@ void undo(Board* game, TurnsList* turns) {
 	}
 	turns->current = turns->current->prev;
 	turns->pos -= 1;
-	printf("turns pos undo is %d\n", turns->pos);
 }
 
 void redo(Board* game, TurnsList* turns) {
 	MoveNode* move;
 	int amount;
 	if (turns->pos == turns->length) {
-		/* error message */
+		printf("No turns to redo\n");
 		return;
 	}
 
@@ -538,15 +532,21 @@ int execute_command(Command* cmd) {
 
 	case SET:
 		if (x < 1 || x > board->board_size) {
-			printf("Error: first parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
+			printf(
+					"Error: first parameter out of range. Should be between %d and %d.\n",
+					1, board->board_size);
 			break;
 		}
 		if (y < 1 || y > board->board_size) {
-			printf("Error: second parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
+			printf(
+					"Error: second parameter out of range. Should be between %d and %d.\n",
+					1, board->board_size);
 			break;
 		}
 		if (z < 0 || z > board->board_size) {
-			printf("Error: third parameter out of range. Should be between %d and %d.\n", 0, board->board_size);
+			printf(
+					"Error: third parameter out of range. Should be between %d and %d.\n",
+					0, board->board_size);
 			break;
 		}
 		if (current_game_mode == GAME_MODE_SOLVE
@@ -556,11 +556,12 @@ int execute_command(Command* cmd) {
 		}
 		set_value_command(board, x, y, z, turns_list);
 		print_board(board);
-		if (current_game_mode == GAME_MODE_SOLVE && !num_of_empty_cells(board)) {
-			if (!is_there_errors(board)){
-			printf("Board Solved!\n");
-			print_image();
-			current_game_mode = GAME_MODE_INIT;
+		if (current_game_mode == GAME_MODE_SOLVE
+				&& !num_of_empty_cells(board)) {
+			if (!is_there_errors(board)) {
+				printf("Board Solved!\n");
+				print_image();
+				current_game_mode = GAME_MODE_INIT;
 			} else {
 				printf("The solution contains errors!\n");
 			}
@@ -640,11 +641,15 @@ int execute_command(Command* cmd) {
 
 	case HINT:
 		if (x < 1 || x > board->board_size) {
-			printf("Error: first parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
+			printf(
+					"Error: first parameter out of range. Should be between %d and %d.\n",
+					1, board->board_size);
 			break;
 		}
 		if (y < 1 || y > board->board_size) {
-			printf("Error: second parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
+			printf(
+					"Error: second parameter out of range. Should be between %d and %d.\n",
+					1, board->board_size);
 			break;
 		}
 		tmp = get_hint(board, x - 1, y - 1, 1);
@@ -654,11 +659,15 @@ int execute_command(Command* cmd) {
 
 	case GUESS_HINT:
 		if (x < 1 || x > board->board_size) {
-			printf("Error: first parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
+			printf(
+					"Error: first parameter out of range. Should be between %d and %d.\n",
+					1, board->board_size);
 			break;
 		}
 		if (y < 1 || y > board->board_size) {
-			printf("Error: second parameter out of range. Should be between %d and %d.\n", 1, board->board_size);
+			printf(
+					"Error: second parameter out of range. Should be between %d and %d.\n",
+					1, board->board_size);
 			break;
 		}
 		get_hint(board, x - 1, y - 1, 0);
@@ -669,8 +678,10 @@ int execute_command(Command* cmd) {
 			printf("Errors exist in board\n");
 			return 1;
 		}
-		printf("Number of possible solutions: %d\n",
-				number_of_solutions(board));
+		tmp = number_of_solutions(board);
+		if (tmp != -1)
+			printf("Number of possible solutions: %d\n",
+					number_of_solutions(board));
 		return 1;
 
 	case AUTOFILL:

@@ -11,7 +11,15 @@
 #include "ILP_solver.h"
 
 #define DEFAULT 0
+#define MALLOC_ERROR "Error: malloc has failed.\n"
+#define CALLOC_ERROR "Error: calloc has failed.\n"
 
+/*
+ * Function: create_environment
+ * ----------------------
+ * 	Receives pointers to environment and model and creates the proper Gurobi items according to the type
+ *
+ */
 int create_environment(GRBenv **env, GRBmodel **model, int type) {
 	int e = 0;
 
@@ -40,6 +48,12 @@ int create_environment(GRBenv **env, GRBmodel **model, int type) {
 	return 1;
 }
 
+/*
+ * Function: free_all
+ * ----------------------
+ * 	Receives pointers to all allocated memory variables and frees them
+ *
+ */
 void free_all(GRBenv* env, GRBmodel* model, double* sol, int* ind, double* obj,
 		char* vtype, int* indexes) {
 	free(sol);
@@ -51,12 +65,20 @@ void free_all(GRBenv* env, GRBmodel* model, double* sol, int* ind, double* obj,
 	GRBfreeenv(env);
 }
 
+/*
+ * Function: add_variables
+ * ----------------------
+ * 	Receives environment, model, types array, indexes array, and relevant info regarding
+ * 	the environment variables and add the variables to the Gurobi model according to the current
+ * 	run (ILP/LP).
+ *
+ */
 int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
 		int type, int* indexes, int board_size) {
 	int i, j = 0, k, e = 0, c, tmp, x;
 	double* obj = (double*) malloc(sizeof(double) * count);
 	if (!obj) {
-		printf("Malloc() error\n");
+		printf("%s", MALLOC_ERROR);
 		return 0;
 	}
 
@@ -121,6 +143,13 @@ int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
 	return 1;
 }
 
+/*
+ * Function: add_constraints
+ * ----------------------
+ * 	Receives environment, model, types, objectives and ind arrays, indexes array, and relevant info regarding
+ * 	the environment variables and add the constraints to the Gurobi model.
+ *
+ */
 int add_constraints(Board* game, GRBenv** env, GRBmodel** model, double** obj,
 		int** ind, int* indexes, int count) {
 	int i, j, k, f, g, e = 0, inde = 0, curr = 0;
@@ -241,6 +270,12 @@ int add_constraints(Board* game, GRBenv** env, GRBmodel** model, double** obj,
 	return 1;
 }
 
+/*
+ * Function: ilp_solution_to_board
+ * ----------------------
+ * 	Receives the Gurobi output and allocates it to the game board.
+ *
+ */
 void ilp_solution_to_board(Board* game, double* sol, int* indexes) {
 	int i, j, k, index;
 
@@ -284,6 +319,11 @@ int ilp(Board* game) {
 	indexes = (int*) calloc(
 			game->board_size * game->board_size * game->board_size,
 			sizeof(int));
+	if (!indexes) {
+		printf("%s", CALLOC_ERROR);
+		return 0;
+	}
+
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			curr = i * game->board_size * game->board_size
@@ -301,12 +341,33 @@ int ilp(Board* game) {
 	}
 
 	ind = (int*) malloc(game->board_size * sizeof(int));
+	if (!ind) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		return 0;
+	}
 	sol = (double*) malloc(count * sizeof(double));
+	if (!sol) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		free(ind);
+		return 0;
+	}
 	obj = (double*) malloc(game->board_size * sizeof(double));
+	if (!obj) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		free(ind);
+		free(sol);
+		return 0;
+	}
 	vtype = (char*) malloc(count * sizeof(char));
-	if (indexes == NULL || ind == NULL || sol == NULL || obj == NULL
-			|| vtype == NULL) {
-		printf("Error: ilp malloc has failed\n");
+	if (!vtype) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		free(ind);
+		free(sol);
+		free(obj);
 		return 0;
 	}
 
@@ -364,9 +425,19 @@ int ilp(Board* game) {
 	return status;
 }
 
+/*
+ * Function: lp_solution_to_board
+ * ----------------------
+ * 	Receives the Gurobi output and allocates it to the game board.
+ *
+ */
 void lp_solution_to_board(Board* game, double* sol, int* indexes, float th) {
 	int i, j, k, index, c, r, b;
 	int* tmp = (int*) malloc(sizeof(int) * game->board_size);
+	if (!tmp) {
+		printf("%s", MALLOC_ERROR);
+		return;
+	}
 
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
@@ -428,6 +499,11 @@ int lp(Board* game, float th, int type, int row, int col) {
 	indexes = (int*) calloc(
 			game->board_size * game->board_size * game->board_size,
 			sizeof(int));
+	if (!indexes) {
+		printf("%s", CALLOC_ERROR);
+		return 0;
+	}
+
 	for (i = 0; i < game->board_size; i++) {
 		for (j = 0; j < game->board_size; j++) {
 			curr = i * game->board_size * game->board_size
@@ -445,12 +521,33 @@ int lp(Board* game, float th, int type, int row, int col) {
 	}
 
 	ind = (int*) malloc(game->board_size * sizeof(int));
+	if (!ind) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		return 0;
+	}
 	sol = (double*) malloc(count * sizeof(double));
+	if (!sol) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		free(ind);
+		return 0;
+	}
 	obj = (double*) malloc(game->board_size * sizeof(double));
+	if (!obj) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		free(ind);
+		free(sol);
+		return 0;
+	}
 	vtype = (char*) malloc(count * sizeof(char));
-	if (indexes == NULL || ind == NULL || sol == NULL || obj == NULL
-			|| vtype == NULL) {
-		printf("Error: ilp malloc has failed\n");
+	if (!vtype) {
+		printf("%s", MALLOC_ERROR);
+		free(indexes);
+		free(ind);
+		free(sol);
+		free(obj);
 		return 0;
 	}
 
@@ -496,7 +593,8 @@ int lp(Board* game, float th, int type, int row, int col) {
 				index = row * game->board_size * game->board_size
 						+ col * game->board_size + k;
 				if (sol[indexes[index] - 1] >= 0.000001)
-					printf("Value %d has %f%%\n", k + 1, sol[indexes[index] - 1] * 100);
+					printf("Value %d has %f%%\n", k + 1,
+							sol[indexes[index] - 1] * 100);
 			}
 		}
 	} else if (status) {

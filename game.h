@@ -114,6 +114,64 @@ int remove_option(Cell* cell, int value);
  *
  */
 
+void print_board(Board* board);
+
+/*
+ * Function: is_value_valid
+ * ----------------------
+ * 	Receives a Board, and three integers representing row number, column number, value.
+ * 	It checks if the value is legal in the board at coordinates (row, col).
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ * 	value : an integer representing the value we are trying to verify.
+ *
+ * 	returns: 1 if the value is legal, 0 otherwise.
+ */
+int is_value_valid(Board* game, int row, int col, int value);
+
+/*
+ * Function: check_specific_error
+ * ----------------------
+ * 	Receives a Board, and two integers indicating the cell's row and column, and check only the related cells for errors.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer indicating in which row the cell is located.
+ * 	col : an integer indicating in which column the cell is located.
+ *
+ * 	returns: ?
+ */
+void check_specific_error(Board* game, int row, int col);
+
+/*
+ * Function: update_cell_options
+ * ----------------------
+ * 	Receives a Board, and two integers representing row number, column number.
+ * 	It modifies options lists for it.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ *
+ * 	returns: ?
+ */
+void update_cell_options(Board* game, int row, int col);
+
+/*
+ * Function: update_options_after_set
+ * ----------------------
+ * 	Receives a Board, and two integers representing row number, column number.
+ * 	It modifies options lists only for the affected cells.
+ *
+ * 	game : the Board which holds the current board.
+ * 	row : an integer representing the row coordinate of a cell.
+ * 	col : an integer representing the column coordinate of a cell.
+ *
+ * 	returns: ?
+ */
+void update_options_after_set(Board* game, int row, int col);
+
 /*
  * Function: set_value
  * ----------------------
@@ -128,8 +186,6 @@ int remove_option(Cell* cell, int value);
  * 	returns: ?
  */
 void set_value(Board* game, int row, int col, int value);
-
-void print_board(Board* board);
 
 /*
  * Function: create_board
@@ -186,19 +242,5 @@ void destroy_cell(Cell* cell);
  *
  */
 void destroy_board(Board* board);
-
-
-/*
- * Function: create_board_copy
- * ----------------------
- * 	Receives a command as parsed by the parser and executes it.
- * 	Can execute any command which id is included in the command_id enum,
- * 	while modifying board andturns_list structures saved in game.c
- *
- *	cmd: the Command to be executed as returned by the parser.
- *
- * 	return : 1 if command was executed and game continues, 0 else.
- */
-Board* create_board_copy(Board* game);
 
 #endif /* GAME_H_ */

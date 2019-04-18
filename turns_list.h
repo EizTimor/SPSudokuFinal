@@ -125,7 +125,7 @@ TurnsList* create_turns_list();
  * 	and inserts the information to the moves list.
  *
  *	turns : the turns list to add the information into.
- * 	moves : the moves list of the specific turn.
+ * 	changes : the moves list of the specific turn.
  *
  * 	returns: ?
  */
@@ -147,7 +147,7 @@ void clean_from_current(TurnsList* turns);
  * ------------------------
  * 	Used to destroy a turnsList structure and free the memory allocated to it.
  *
- * 	moves : a pointer to the turnsList structure.
+ * 	turns : a pointer to the turnsList structure.
  *
  */
 void destroy_turns_list(TurnsList* turns);

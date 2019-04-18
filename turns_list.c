@@ -10,10 +10,12 @@
 #include <string.h>
 #include "turns_list.h"
 
+#define MALLOC_ERROR "Error: malloc has failed\n"
+
 MovesList* create_moves_list() {
 	MovesList* list = (MovesList*) malloc(sizeof(MovesList));
 	if (list == NULL) {
-		/* error message */
+		printf("%s", MALLOC_ERROR);
 		exit(0);
 	}
 
@@ -23,11 +25,11 @@ MovesList* create_moves_list() {
 	return list;
 }
 
-void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) {
+int insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) {
 	MoveNode* node = (MoveNode*) malloc(sizeof(MoveNode));
 
 	if (node == NULL) {
-		/* error message */
+		printf("%s", MALLOC_ERROR);
 		exit(0);
 	}
 
@@ -48,6 +50,7 @@ void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) 
 	}
 
 	moves->length += 1;
+	return 1;
 }
 
 void destroy_moves_list(MovesList* moves) {
@@ -59,15 +62,13 @@ void destroy_moves_list(MovesList* moves) {
 		moves->top = node;
 		moves->length = moves->length - 1;
 	}
-
-	/*free(moves);*/
 }
 
 TurnsList* create_turns_list() {
 	TurnsList* list = (TurnsList*) malloc(sizeof(TurnsList));
 
 	if (list == NULL) {
-		/* error message */
+		printf("%s", MALLOC_ERROR);
 		exit(0);
 	}
 
@@ -83,7 +84,7 @@ void insert_turn(TurnsList* turns, MovesList* changes) {
 	TurnNode* node = (TurnNode*) malloc(sizeof(TurnNode));
 
 	if (node == NULL) {
-		/* error message */
+		printf("%s", MALLOC_ERROR);
 		exit(0);
 	}
 	clean_from_current(turns);
