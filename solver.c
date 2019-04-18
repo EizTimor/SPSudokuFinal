@@ -79,11 +79,12 @@ int get_first_empty_cell(Board* game, int* row, int* col) {
 int number_of_solutions(Board* game) {
 	int count = 0;
 	int row = 0, col = 0;
+	StackNode* node;
 	Stack* stack = init_stack();
 	if (!stack) {
 		return -1;
 	}
-	StackNode* node = (StackNode*) malloc(sizeof(StackNode));
+	node = (StackNode*) malloc(sizeof(StackNode));
 	if (!node) {
 		printf("%s", MALLOC_ERROR);
 		destroy_stack(stack);
@@ -379,7 +380,7 @@ int auto_fill(Board* game, TurnsList* turns) {
 	int row, col;
 	MovesList* moves;
 
-	if (!is_there_error(game)) {
+	if (is_there_errors(game)) {
 		printf("%s", ERRORS_EXIST);
 		return 0;
 	}

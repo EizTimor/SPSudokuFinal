@@ -25,7 +25,7 @@ MovesList* create_moves_list() {
 	return list;
 }
 
-int insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) {
+void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) {
 	MoveNode* node = (MoveNode*) malloc(sizeof(MoveNode));
 
 	if (node == NULL) {
@@ -50,7 +50,6 @@ int insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) {
 	}
 
 	moves->length += 1;
-	return 1;
 }
 
 void destroy_moves_list(MovesList* moves) {

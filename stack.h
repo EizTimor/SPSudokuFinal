@@ -61,7 +61,7 @@ Stack* init_stack();
  *
  * 	returns: ?
  */
-void push(Stack* stack, int row, int col, int val);
+int push(Stack* stack, int row, int col, int val);
 
 /*
  * Function: pop
