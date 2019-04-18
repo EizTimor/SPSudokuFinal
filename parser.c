@@ -260,7 +260,6 @@ int fill_string_params(const char* command_name, int num_params, char** param,
 	while ((token = strtok(NULL, delim)) != NULL) {
 		if (i < num_params) {
 			*param = token;
-			printf("String param: %s\n", *param);
 		} else {
 			sprintf(error_message, TOO_MANY_PARAMS_ERROR, command_name, num_params);
 			return 0;

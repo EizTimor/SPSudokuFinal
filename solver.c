@@ -556,9 +556,14 @@ int execute_command(Command* cmd) {
 		}
 		set_value_command(board, x, y, z, turns_list);
 		print_board(board);
-		if (current_game_mode == GAME_MODE_SOLVE && is_finished(board)) {
+		if (current_game_mode == GAME_MODE_SOLVE && !num_of_empty_cells(board)) {
+			if (!is_there_errors(board)){
 			printf("Board Solved!\n");
 			print_image();
+			current_game_mode = GAME_MODE_INIT;
+			} else {
+				printf("The solution contains errors!\n");
+			}
 		}
 		return 1;
 

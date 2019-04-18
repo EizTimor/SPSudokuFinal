@@ -133,8 +133,6 @@ void print_row(Board *board, int index) {
 void print_board(Board* board) {
 	int index = 0, j;
 	int row_length = 4 * board->board_size + board->block_row + 1;
-	printf("N: %d, m: %d, row_length: %d\n", board->board_size,
-			board->block_row, row_length);
 	print_separator_row(row_length);
 	while (index < board->board_size) {
 		for (j = 0; j < board->block_row; j++) {
