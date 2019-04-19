@@ -199,6 +199,16 @@ void redo(Board* game, TurnsList* turns);
  */
 void reset_board(Board* game, TurnsList* turns);
 
+/*
+ * Function: execute_command
+ * ----------------------
+ * 	The function receives a command object as parsed by the parser and executes it.
+ *
+ * 	cmd : a pointer to a Command struct of a command to be executed.
+ *
+ * 	returns: 1 if the command was executed successfully and the game continues,
+ * 			 0 otherwise.
+ */
 int execute_command(Command* cmd);
 
 #endif /* SOLVER_H_ */

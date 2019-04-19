@@ -16,6 +16,12 @@
 #define COMMAND_TOO_LONG_ERROR "Error: invalid command, too many characters\n"
 #define WELCOME_MSG "Sudoku program started, please enter a command\n"
 
+/*
+ * Function: clear_line
+ * ----------------------
+ * Reads from STDIN stream until there is a new line or EOF.
+ * Used to clear commands longer than 256 characters.
+ */
 void clear_line() {
 	char c;
 	do {

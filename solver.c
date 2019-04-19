@@ -485,9 +485,6 @@ void print_image() {
 	}
 }
 
-/*
- * the function receives a command object as parsed by the parser and executes it.
- */
 int execute_command(Command* cmd) {
 	int x = cmd->params[0], y = cmd->params[1], z = cmd->params[2];
 	float float_param = cmd->float_param;

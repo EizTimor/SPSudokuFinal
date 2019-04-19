@@ -82,6 +82,11 @@ int remove_option(Cell* cell, int value) {
 	return 0;
 }
 
+/*
+ * Function: print_separator_row
+ * ----------------------
+ * 	Prints {row_length} times '-'. this is the separating row in the printed board.
+ */
 void print_separator_row(int row_length) {
 	int i;
 	char *line = (char*) malloc(row_length * sizeof(char));
@@ -97,6 +102,11 @@ void print_separator_row(int row_length) {
 	free(line);
 }
 
+/*
+ * Function: print_cell
+ * ----------------------
+ * 	Receives a cell and prints it in the correct format.
+ */
 void print_cell(Cell *cell) {
 	char extra_sign;
 	int val = cell->value;
@@ -116,6 +126,12 @@ void print_cell(Cell *cell) {
 		printf("   %c", extra_sign);
 }
 
+/*
+ * Function: print_row
+ * ----------------------
+ * 	Receives a pointer to a board and a row index. Prints the row accourding to the
+ * 	format.
+ */
 void print_row(Board *board, int index) {
 	int j = 0, i;
 	printf("|");

@@ -69,6 +69,8 @@ const char* get_command_name(int id) {
 }
 
 /*
+ * Function: clear_line
+ * ----------------------
  * Used to get the command id from its name.
  */
 int get_command_id(char *type) {
@@ -83,6 +85,8 @@ int get_command_id(char *type) {
 }
 
 /*
+ * Function: num_of_params
+ * ----------------------
  * Returns the number of parameters the command expects.
  */
 int num_of_params(enum command_id id) {
@@ -114,6 +118,8 @@ int num_of_params(enum command_id id) {
 }
 
 /*
+ * Function: get_command_modes
+ * ----------------------
  * Returns a string containing the modes in which the command is available.
  */
 const char* get_command_modes(enum command_id id) {
@@ -148,6 +154,8 @@ const char* get_command_modes(enum command_id id) {
 }
 
 /*
+ * Function: is_command_available
+ * ----------------------
  * Returns true iff command is available in current game mode.
  */
 int is_command_available(enum command_id id) {
@@ -181,6 +189,8 @@ int is_command_available(enum command_id id) {
 }
 
 /*
+ * Function: is_params_optional
+ * ----------------------
  * Returns true iff the parameters of the command are optional.
  */
 int is_params_optional(enum command_id id) {
@@ -188,6 +198,8 @@ int is_params_optional(enum command_id id) {
 }
 
 /*
+ * Function: fill_int_params
+ * ----------------------
  * The function receives an array and fills it with the required parameters for the command_name.
  * The function assumes strtok was already called to fetch the command name and can be
  * called again with Null pointer to continue analyzing the received string input.
@@ -216,6 +228,8 @@ int fill_int_params(const char* command_name, int num_params, int params[3],
 }
 
 /*
+ * Function: fill_float_params
+ * ----------------------
  * The function receives a float pointer and fills it with the required parameter
  * for the command_name.
  * The function assumes "strtok" was already called to fetch the command name and can be
@@ -245,6 +259,8 @@ int fill_float_params(const char* command_name, int num_params,
 }
 
 /*
+ * Function: fill_string_params
+ * ----------------------
  * The function receives a string pointer and fills it with the required parameter
  * for the command_name.
  * The function assumes "strtok" was already called to fetch the command name and can be
@@ -274,6 +290,8 @@ int fill_string_params(const char* command_name, int num_params, char** param,
 }
 
 /*
+ * Function: parse_command
+ * ----------------------
  * The function containing the parsing logic, used to convert a string with the user's input
  * to a Command structure. If an error has occurred during the parsing, a command
  * of type INVALID will be returned with the error description. Else, the command object
@@ -329,9 +347,6 @@ Command* parse_command(char *str) {
 	}
 }
 
-/*
- *A function used to print a command structure, useful for debugging.
- */
 void print_command(Command* cmd) {
 	int id, i = 0, num_params;
 	if (!cmd)
