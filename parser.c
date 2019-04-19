@@ -14,23 +14,35 @@
 #define NOT_ENOUGH_PARAMS_ERROR "Error: not enough parameters.\n'%s' command requires %d parameters."
 #define TOO_MANY_PARAMS_ERROR "Error: too many parameters.\n'%s' command requires %d parameters."
 
+/*
+ * Function: assert_not_null
+ * ----------------------
+ * Asserts a pointer is not NULL. If it is, prints an error and exits the program.
+ */
+void assert_not_null(void* p){
+	if (p == NULL) {
+			printf(MALLOC_ERROR);
+			exit(0);
+	}
+}
+
 Command* create_command(int id, int params[3], float float_param,
 		char* string_param, char* error_message) {
 	int i;
 	Command* cmd = (Command*) malloc(sizeof(Command));
-	if (cmd == NULL) {
-		printf(MALLOC_ERROR);
-		exit(0);
-	}
+	assert_not_null(cmd);
+
 	cmd->id = id;
 	if (error_message) {
 		cmd->error_message = malloc((strlen(error_message) + 1) * sizeof(char));
+		assert_not_null(cmd->error_message);
 		strcpy(cmd->error_message, error_message);
 	} else {
 		cmd->error_message = NULL;
 	}
 	if (string_param) {
 		cmd->string_param = malloc((strlen(string_param) + 1) * sizeof(char));
+		assert_not_null(cmd->string_param);
 		strcpy(cmd->string_param, string_param);
 	} else {
 		cmd->string_param = NULL;
@@ -54,6 +66,8 @@ void destroy_command(Command* cmd) {
 }
 
 /*
+ * Function: get_command_name
+ * ----------------------
  * Used to get the command name from its id.
  */
 const char* get_command_name(int id) {
