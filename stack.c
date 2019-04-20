@@ -13,52 +13,51 @@
 #define MALLOC_ERROR "Error: malloc has failed\n"
 
 Stack* init_stack() {
-    Stack* stack = (Stack*)malloc(sizeof(Stack));
-    if (stack == NULL) {
-    	printf(MALLOC_ERROR);
-		return NULL;
+	Stack* stack = (Stack*) malloc(sizeof(Stack));
+	if (stack == NULL) {
+		printf(MALLOC_ERROR);
+		exit(0);
 	}
-    stack->top = NULL;
-    stack->length=0;
+	stack->top = NULL;
+	stack->length = 0;
 
-    return stack;
+	return stack;
 }
 
-int push(Stack* stack, int row, int col, int val) {
-    StackNode* node = (StackNode*)malloc(sizeof (StackNode));
-    if (node == NULL) {
-    	printf(MALLOC_ERROR);
-        return 0;
-    }
+void push(Stack* stack, int row, int col, int val) {
+	StackNode* node = (StackNode*) malloc(sizeof(StackNode));
+	if (node == NULL) {
+		printf(MALLOC_ERROR);
+		exit(0);
+	}
 
-    node->column = col;
-    node->row = row;
-    node->value = val;
-    node->prev = stack->top;
+	node->column = col;
+	node->row = row;
+	node->value = val;
+	node->prev = stack->top;
 
-    stack->top = node;
-    stack->length = stack->length + 1;
-    return 1;
+	stack->top = node;
+	stack->length = stack->length + 1;
 }
 
 void pop(Stack* stack, StackNode* popped) {
-    StackNode* tmp = stack->top;
-    popped->row = tmp->row;
-    popped->column = tmp->column;
-    popped->value = tmp->value;
+	StackNode* tmp = stack->top;
+	popped->row = tmp->row;
+	popped->column = tmp->column;
+	popped->value = tmp->value;
 
-    stack->top = stack->top->prev;
-    stack->length = stack->length - 1;
+	stack->top = stack->top->prev;
+	stack->length = stack->length - 1;
 
-    free(tmp);
+	free(tmp);
 }
 
 StackNode* top(Stack* stack) {
-    return stack->top;
+	return stack->top;
 }
 
 int is_empty(Stack* stack) {
-    return (stack->length == 0);
+	return (stack->length == 0);
 }
 
 void destroy_stack(Stack* stack) {

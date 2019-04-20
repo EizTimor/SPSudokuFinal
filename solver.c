@@ -81,14 +81,11 @@ int number_of_solutions(Board* game) {
 	int row = 0, col = 0;
 	StackNode* node;
 	Stack* stack = init_stack();
-	if (!stack) {
-		return -1;
-	}
+
 	node = (StackNode*) malloc(sizeof(StackNode));
 	if (!node) {
 		printf("%s", MALLOC_ERROR);
-		destroy_stack(stack);
-		return -1;
+		exit(0);
 	}
 
 	if (!validate_board(game)) {
@@ -103,24 +100,14 @@ int number_of_solutions(Board* game) {
 		return 1;
 	}
 
-	if (!push(stack, row, col, 1)) {
-		printf("%s", MALLOC_ERROR);
-		destroy_stack(stack);
-		free(node);
-		return -1;
-	}
+	push(stack, row, col, 1);
 	while (!is_empty(stack)) {
 		if (is_value_valid(game, stack->top->row, stack->top->column,
 				stack->top->value)) {
 			set_value(game, stack->top->row + 1, stack->top->column + 1,
 					stack->top->value);
 			if (get_first_empty_cell(game, &row, &col)) {
-				if (!push(stack, row, col, 1)) {
-					printf("%s", MALLOC_ERROR);
-					destroy_stack(stack);
-					free(node);
-					return -1;
-				}
+				push(stack, row, col, 1);
 			} else { /* board is complete */
 				count += 1;
 				set_value(game, stack->top->row + 1, stack->top->column + 1,
@@ -248,14 +235,10 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 	}
 
 	rows = (int *) malloc(sizeof(int) * x);
-	if (!rows) {
-		printf("%s", MALLOC_ERROR);
-		return 0;
-	}
 	cols = (int *) malloc(sizeof(int) * x);
-	if (!cols) {
+	if (!rows || !cols) {
 		printf("%s", MALLOC_ERROR);
-		free(rows);
+		exit(0);
 		return 0;
 	}
 	copy = create_board_copy(game);
@@ -460,6 +443,7 @@ void redo(Board* game, TurnsList* turns) {
 
 void reset_board(Board* game, TurnsList* turns) {
 	while (turns->current != turns->top) {
+		printf("undoing %d\n", turns->pos);
 		undo(game, turns);
 	}
 	undo(game, turns);

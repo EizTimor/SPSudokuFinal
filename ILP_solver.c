@@ -79,7 +79,7 @@ int add_variables(GRBenv **env, GRBmodel **model, char** vtype, int count,
 	double* obj = (double*) malloc(sizeof(double) * count);
 	if (!obj) {
 		printf("%s", MALLOC_ERROR);
-		return 0;
+		exit(0);
 	}
 
 	if (type == 0)
@@ -341,34 +341,12 @@ int ilp(Board* game) {
 	}
 
 	ind = (int*) malloc(game->board_size * sizeof(int));
-	if (!ind) {
-		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		return 0;
-	}
 	sol = (double*) malloc(count * sizeof(double));
-	if (!sol) {
-		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		free(ind);
-		return 0;
-	}
 	obj = (double*) malloc(game->board_size * sizeof(double));
-	if (!obj) {
-		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		free(ind);
-		free(sol);
-		return 0;
-	}
 	vtype = (char*) malloc(count * sizeof(char));
-	if (!vtype) {
+	if (!ind || !sol || !obj || !vtype) {
 		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		free(ind);
-		free(sol);
-		free(obj);
-		return 0;
+		exit(0);
 	}
 
 	printf("count is %d\n", count);
@@ -436,7 +414,7 @@ void lp_solution_to_board(Board* game, double* sol, int* indexes, float th) {
 	int* tmp = (int*) malloc(sizeof(int) * game->board_size);
 	if (!tmp) {
 		printf("%s", MALLOC_ERROR);
-		return;
+		exit(0);
 	}
 
 	for (i = 0; i < game->board_size; i++) {
@@ -501,7 +479,7 @@ int lp(Board* game, float th, int type, int row, int col) {
 			sizeof(int));
 	if (!indexes) {
 		printf("%s", CALLOC_ERROR);
-		return 0;
+		exit(0);
 	}
 
 	for (i = 0; i < game->board_size; i++) {
@@ -521,34 +499,12 @@ int lp(Board* game, float th, int type, int row, int col) {
 	}
 
 	ind = (int*) malloc(game->board_size * sizeof(int));
-	if (!ind) {
-		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		return 0;
-	}
 	sol = (double*) malloc(count * sizeof(double));
-	if (!sol) {
-		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		free(ind);
-		return 0;
-	}
 	obj = (double*) malloc(game->board_size * sizeof(double));
-	if (!obj) {
-		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		free(ind);
-		free(sol);
-		return 0;
-	}
 	vtype = (char*) malloc(count * sizeof(char));
-	if (!vtype) {
+	if (!ind || !sol || !obj || !vtype) {
 		printf("%s", MALLOC_ERROR);
-		free(indexes);
-		free(ind);
-		free(sol);
-		free(obj);
-		return 0;
+		exit(0);
 	}
 
 	printf("count is %d\n", count);
