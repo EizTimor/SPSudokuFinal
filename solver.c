@@ -268,8 +268,8 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 		}
 		if (x != 0 && !count)
 			continue;
+
 		k = ilp(game);
-		printf("k is %d and i is %d\n", k, i);
 		if (k == 0) {
 			for (k = 0; k < count; k++) {
 				set_value(game, rows[k] + 1, cols[k] + 1, DEFAULT);
@@ -290,8 +290,6 @@ int generate_board(Board* game, TurnsList* turns, int x, int y) {
 		return 0;
 	}
 
-	printf("Printing Copy...\n");
-	print_board(game);
 	moves = create_moves_list();
 	/* clear all but y cells */
 	for (i = 0; i < game->board_size * game->board_size - y; i++) {
@@ -390,7 +388,7 @@ int auto_fill(Board* game, TurnsList* turns) {
 	return 1;
 }
 
-void undo(Board* game, TurnsList* turns) {
+void undo(Board* game, TurnsList* turns, int to_print) {
 	MoveNode* move;
 	int amount;
 	if (turns->pos == 0) {
@@ -401,8 +399,9 @@ void undo(Board* game, TurnsList* turns) {
 	amount = turns->current->changes->length;
 	while (amount > 0) {
 		set_value(game, move->row, move->col, move->prev_val);
-		printf("Cell <%d,%d> has been modified back to %d\n", move->row,
-				move->col, move->prev_val);
+		if (to_print)
+			printf("Cell <%d,%d> has been modified back to %d\n", move->row,
+					move->col, move->prev_val);
 		move = move->next;
 		amount--;
 	}
@@ -443,10 +442,9 @@ void redo(Board* game, TurnsList* turns) {
 
 void reset_board(Board* game, TurnsList* turns) {
 	while (turns->current != turns->top) {
-		printf("undoing %d\n", turns->pos);
-		undo(game, turns);
+		undo(game, turns, 0);
 	}
-	undo(game, turns);
+	undo(game, turns, 0);
 }
 
 void print_image() {
@@ -564,12 +562,11 @@ int execute_command(Command* cmd) {
 		return 1;
 
 	case VALIDATE:
-		printf("Validation started...\n");
 		if (is_there_errors(board)) {
 			printf("Errors exist in board\n");
 			break;
 		}
-		printf("No errors in board, checking if solvable...\n");
+
 		if (validate_board(board)) {
 			printf("Board is solvable\n");
 		} else {
@@ -588,6 +585,7 @@ int execute_command(Command* cmd) {
 					"Could not find a solution with given threshold parameter\n");
 			break;
 		}
+		printf("We found a solution for you\n");
 		print_board(board);
 		return 1;
 
@@ -605,7 +603,7 @@ int execute_command(Command* cmd) {
 		return 1;
 
 	case UNDO:
-		undo(board, turns_list);
+		undo(board, turns_list, 1);
 		print_board(board);
 		return 1;
 

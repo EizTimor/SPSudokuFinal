@@ -170,10 +170,11 @@ int auto_fill(Board* game, TurnsList* turns);
  *
  * 	game : the Board which holds the current board.
  * 	turns : the undo list of this game.
+ * 	to_print : whether to print out the changes or not.
  *
  * 	returns: ?
  */
-void undo(Board* game, TurnsList* turns);
+void undo(Board* game, TurnsList* turns, int to_print);
 
 /*
  * Function: redo
