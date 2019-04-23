@@ -441,10 +441,9 @@ void redo(Board* game, TurnsList* turns) {
 }
 
 void reset_board(Board* game, TurnsList* turns) {
-	while (turns->current != turns->top) {
+	while (turns->pos > 0) {
 		undo(game, turns, 0);
 	}
-	undo(game, turns, 0);
 }
 
 void print_image() {

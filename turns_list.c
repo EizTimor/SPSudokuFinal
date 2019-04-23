@@ -53,13 +53,13 @@ void insert_move(MovesList* moves, int row, int col, int prev_val, int new_val) 
 }
 
 void destroy_moves_list(MovesList* moves) {
-	MoveNode* node;
+	MoveNode* node = moves->top;
 
-	while (moves->length) {
+	while (node) {
 		node = moves->top->next;
 		free(moves->top);
 		moves->top = node;
-		moves->length = moves->length - 1;
+		moves->length -= 1;
 	}
 }
 
@@ -92,8 +92,7 @@ void insert_turn(TurnsList* turns, MovesList* changes) {
 		node->prev = turns->top->prev;
 		turns->top->prev->next = node;
 		turns->top->prev = node;
-	}
-	else {
+	} else {
 		turns->top = node;
 		turns->top->prev = node;
 	}
@@ -108,8 +107,7 @@ void clean_from_current(TurnsList* turns) {
 	if (turns->pos == 0) {
 		tmp = turns->top;
 		turns->top = NULL;
-	}
-	else {
+	} else {
 		tmp = turn->next;
 		turn->next = NULL;
 	}
@@ -123,6 +121,8 @@ void clean_from_current(TurnsList* turns) {
 		turn = tmp;
 	}
 	turns->pos = turns->length;
+	if (turns->length > 0)
+		turns->top->prev = turns->current;
 }
 
 void destroy_turns_list(TurnsList* turns) {
