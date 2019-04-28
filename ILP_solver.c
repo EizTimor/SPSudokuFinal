@@ -282,7 +282,7 @@ void ilp_solution_to_board(Board* game, double* sol, int* indexes) {
 			for (k = 0; k < game->board_size; k++) {
 				index = i * game->board_size * game->board_size
 						+ j * game->board_size + k;
-				if (sol[indexes[index] - 1] >= 1.0) {
+				if (indexes[index] > 0 && sol[indexes[index] - 1] >= 1.0) {
 					set_value(game, i + 1, j + 1, k + 1);
 					break;
 				}
@@ -410,7 +410,7 @@ void lp_solution_to_board(Board* game, double* sol, int* indexes, float th) {
 				for (k = 0; k < game->board_size; k++) {
 					index = i * game->board_size * game->board_size
 							+ j * game->board_size + k;
-					if (sol[indexes[index] - 1] >= th
+					if (indexes[index] > 0 && sol[indexes[index] - 1] >= th
 							&& is_value_valid(game, i, j, k + 1)) {
 						tmp[c] = k + 1;
 						b += sol[indexes[index] - 1];
@@ -524,7 +524,7 @@ int lp(Board* game, float th, int type, int row, int col) {
 			for (k = 0; k < game->board_size; k++) {
 				index = row * game->board_size * game->board_size
 						+ col * game->board_size + k;
-				if (sol[indexes[index] - 1] >= 0.000001)
+				if (indexes[index] > 0 && sol[indexes[index] - 1] >= 0.000001)
 					printf("Value %d has %f%%\n", k + 1,
 							sol[indexes[index] - 1] * 100);
 			}
