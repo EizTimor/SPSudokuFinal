@@ -3,7 +3,7 @@
 /*
  * game.h
  *
- *  Created on: Dec 18, 2018
+ *  Created on: Dec 18, 2010
  *      Author: Timor Eizenman & Ido Lerer
  */
 
